@@ -1,15 +1,11 @@
 from pathlib import Path
 
-INPUT_FOLDER = 'input'
-ROOT_FOLDER = 'root_folder'
-OUTPUT_FOLDER = 'output'
-
 
 class ModPack():
-    def __init__(self, mod_folder: Path, destination_folder: Path):
+    def __init__(self, mod_folder: Path, destination_folder: Path, root_folder_name: str):
         self.modname = mod_folder.name
         self.mod_folder = mod_folder
-        self.mod_root_folder = mod_folder / ROOT_FOLDER
+        self.mod_root_folder = mod_folder / root_folder_name
         self.out_p = destination_folder
         self.add_mod()
 
