@@ -14,5 +14,5 @@ if __name__ == "__main__":
     print(settings)
     for single_mod in settings:
         print("~~~~ Adding {}".format(single_mod.get('name')))
-        target_folder = in_p / single_mod.get('folder_name')
-        modpack.ModPack(target_folder, OUTPUT_FOLDER, ROOT_FOLDER_NAME)
+        target_folder = in_p / single_mod.get('folder_name') / single_mod.get('subfolder')
+        modpack.ModPack(target_folder, OUTPUT_FOLDER)
