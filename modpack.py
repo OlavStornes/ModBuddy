@@ -6,11 +6,11 @@ OUTPUT_FOLDER = 'output'
 
 
 class ModPack():
-    def __init__(self, mod_folder):
+    def __init__(self, mod_folder: Path, destination_folder: Path):
         self.modname = mod_folder.name
         self.mod_folder = mod_folder
         self.mod_root_folder = mod_folder / ROOT_FOLDER
-        self.out_p = Path(OUTPUT_FOLDER) / ROOT_FOLDER
+        self.out_p = destination_folder
         self.add_mod()
 
     def convert_from_input_to_output(self, in_path: Path):
