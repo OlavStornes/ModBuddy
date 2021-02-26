@@ -10,7 +10,7 @@ OUTPUT_FOLDER = Path('output') / ROOT_FOLDER_NAME
 
 if __name__ == "__main__":
     in_p = Path(INPUT_FOLDER)
-    settings = json.loads((in_p / SETTINGS_NAME).read_text())
+    settings = json.loads(Path(SETTINGS_NAME).read_text())
     print(settings)
     for single_mod in settings:
         print("~~~~ Adding {}".format(single_mod.get('name')))
