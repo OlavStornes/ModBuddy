@@ -28,12 +28,8 @@ class Ui(QMainWindow):
 
         self.init_fileview()
 
-        # self.init_table_view()
-        self.statusbar.showMessage("GOT EM")
-
         self.init_tablewidget()
 
-        # END OF INIT
         self.show()
 
     @staticmethod
@@ -50,7 +46,7 @@ class Ui(QMainWindow):
     def save_table_config(self):
         config = self.export_modlist_to_list(self.mod_list)
         Path(SETTINGS_NAME).write_text(json.dumps(config, indent=4))
-        self.statusbar.showMessage("GOT EM")
+        self.statusbar.showMessage(f"Settings saved to {SETTINGS_NAME}")
 
     def init_fileview(self):
         self.model = QtWidgets.QFileSystemModel()
@@ -86,7 +82,6 @@ class Ui(QMainWindow):
             self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('folder_name')))
             self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('subfolder')))
 
-
     def letsgo_mydudes(self):
         conf = self.export_modlist_to_list(self.mod_list)
         in_p = Path(INPUT_FOLDER)
@@ -94,10 +89,10 @@ class Ui(QMainWindow):
             print("~~~~ Adding {}".format(single_mod.get('name')))
             target_folder = in_p / single_mod.get('folder_name') / single_mod.get('subfolder')
             modpack.ModPack(target_folder, OUTPUT_FOLDER)
+        self.statusbar.showMessage("Modbuddy done!")
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = Ui()
     app.exec_()
-
