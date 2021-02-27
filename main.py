@@ -254,9 +254,15 @@ class Ui(QMainWindow):
             x = QMessageBox.question(
                 self, 'DELETING FOLDER', f"Are you sure you want to delete \
 everything inside this folder?\n{del_path_target}")
+
         if x == QMessageBox.Yes:
-            for subpath in del_path_target.iterdir():
-                shutil.rmtree(subpath)
+            for subpath in sorted(del_path_target.glob('**/*'), reverse=True):
+                if subpath.is_dir():
+                    subpath.rmdir()
+                else:
+                    subpath.unlink()
+            QMessageBox.information(self, 'Done', 'Mods are cleaned!')
+            
 
     def letsgo_mydudes(self):
         conf = self.export_modlist_to_list(self.mod_list)
