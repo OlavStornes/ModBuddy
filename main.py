@@ -120,13 +120,14 @@ class Ui(QMainWindow):
 
     def letsgo_mydudes(self):
         conf = self.export_modlist_to_list(self.mod_list)
-        for single_mod in conf:
-            if single_mod.get('enabled'):
-                print("~~~~ Adding {}".format(single_mod.get('name')))
-                target_folder = INPUT_FOLDER / single_mod.get('folder_name') / single_mod.get('subfolder')
-                modpack.ModPack(target_folder, OUTPUT_FOLDER)
-        self.statusbar.showMessage("Modbuddy done!")
-        QMessageBox.information(self, 'Done', 'Mods are loaded!')
+
+        x = QMessageBox.question(self, '', "are u sure")
+        if x == QMessageBox.Yes:
+            for single_mod in conf:
+                if single_mod.get('enabled'):
+                    target_folder = INPUT_FOLDER / single_mod.get('folder_name') / single_mod.get('subfolder')
+                    modpack.ModPack(target_folder, OUTPUT_FOLDER)
+            QMessageBox.information(self, 'Done', 'Mods are loaded!')
 
 
 if __name__ == "__main__":
