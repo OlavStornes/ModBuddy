@@ -2,7 +2,7 @@ from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QDir, QAbstractTableModel, QStringListModel
-from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtGui import QStandardItem, QStandardItemModel, QStaticText
 from PyQt5.QtWidgets import QTableWidgetItem, QMainWindow
 from PyQt5.uic import loadUi
 import modpack
@@ -24,10 +24,13 @@ class Ui(QMainWindow):
         self.initialize_mod.clicked.connect(self.letsgo_mydudes)
         self.move_up.clicked.connect(self.move_row_up)
         self.move_down.clicked.connect(self.move_row_down)
+        self.save_settings.clicked.connect(self.save_table_config)
 
         self.init_fileview()
 
         # self.init_table_view()
+        self.statusbar.showMessage("GOT EM")
+
         self.init_tablewidget()
 
         # END OF INIT
@@ -42,7 +45,12 @@ class Ui(QMainWindow):
                 'folder_name': table.item(i, 1).text(),
                 'subfolder': table.item(i, 2).text()
             })
-        print(output)
+        return output
+
+    def save_table_config(self):
+        config = self.export_modlist_to_list(self.mod_list)
+        Path(SETTINGS_NAME).write_text(json.dumps(config, indent=4))
+        self.statusbar.showMessage("GOT EM")
 
     def init_fileview(self):
         self.model = QtWidgets.QFileSystemModel()
@@ -79,21 +87,17 @@ class Ui(QMainWindow):
             self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('subfolder')))
 
 
-            
-
     def letsgo_mydudes(self):
-        print(self.mod_list.item(1, 0))
-        self.export_modlist_to_list(self.mod_list)
+        conf = self.export_modlist_to_list(self.mod_list)
+        in_p = Path(INPUT_FOLDER)
+        for single_mod in conf:
+            print("~~~~ Adding {}".format(single_mod.get('name')))
+            target_folder = in_p / single_mod.get('folder_name') / single_mod.get('subfolder')
+            modpack.ModPack(target_folder, OUTPUT_FOLDER)
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = Ui()
     app.exec_()
-    # in_p = Path(INPUT_FOLDER)
-    # settings = json.loads(Path(SETTINGS_NAME).read_text())
-    # print(settings)
-    # for single_mod in settings:
-    #     print("~~~~ Adding {}".format(single_mod.get('name')))
-    #     target_folder = in_p / single_mod.get('folder_name') / single_mod.get('subfolder')
-    #     modpack.ModPack(target_folder, OUTPUT_FOLDER)
+
