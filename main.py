@@ -1,7 +1,8 @@
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QTableWidgetItem, QMainWindow, QFileSystemModel
+from PyQt5.sip import setdestroyonexit
 from PyQt5.uic import loadUi
 import shutil
 import modpack
@@ -26,7 +27,7 @@ class Ui(QMainWindow):
         self.game_setting = {}
 
         # Initialize some components
-        self.filesystem_model = QtWidgets.QFileSystemModel()
+        self.fs_mod = QFileSystemModel()
 
         # Connect buttons
         self.move_up.clicked.connect(self.move_row_up)
@@ -43,10 +44,10 @@ class Ui(QMainWindow):
         self.load_game_button.clicked.connect(self.load_targeted_game)
         self.initialize_mod.clicked.connect(self.letsgo_mydudes)
 
-        self.update_fileview(str(OUTPUT_FOLDER))
         self.update_game_combobox()
         self.init_tablewidget()
         self.retrieve_last_activity()
+        self.update_fileview()
         self.show()
 
     @staticmethod
@@ -118,11 +119,18 @@ class Ui(QMainWindow):
         self.load_profile(preset)
         self.update_last_activity()
 
-    def update_fileview(self, path):
-        index = self.filesystem_model.index(path)
-        self.filesystem_model.setRootPath(path)
-        self.file_view.setModel(self.filesystem_model)
-        self.file_view.expand(index)
+    def update_fileview(self):
+        path = self.game_setting.get('game_root_folder')
+        mod_path = self.game_setting.get('game_mod_folder')
+        print(f"updating path {path}")
+
+        self.fs_mod.setRootPath(path)
+        self.file_view.setModel(self.fs_mod)
+        self.file_view.setRootIndex(self.fs_mod.index(path))
+        self.file_view.expand(self.fs_mod.index(mod_path))
+
+
+        
 
     def create_new_game(self):
         game_path = QFileDialog.getExistingDirectory(self, 'Get game folder')
