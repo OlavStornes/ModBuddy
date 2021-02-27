@@ -3,6 +3,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QTableWidgetItem, QMainWindow
 from PyQt5.uic import loadUi
+import shutil
 import modpack
 import json
 import sys
@@ -31,6 +32,7 @@ class Ui(QMainWindow):
         self.move_up.clicked.connect(self.move_row_up)
         self.move_down.clicked.connect(self.move_row_down)
         self.new_mod_button.clicked.connect(self.install_new_mod)
+        self.new_mod_archived_button.clicked.connect(self.install_new_archived_mod)
 
         # - Game profiles
         self.load_profile_button.clicked.connect(self.load_current_profile)
@@ -159,11 +161,29 @@ class Ui(QMainWindow):
         self.update_last_activity()
 
     def install_new_mod(self):
-        folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')
+        folder_path = Path(QFileDialog.getExistingDirectory(self, 'Install mod'))
         if not folder_path:
             return
-        subfolder = QFileDialog.getExistingDirectory(self, 'Choose subfolder', folder_path)
-        if not subfolder:
+        self.add_mod(folder_path)
+
+    def install_new_archived_mod(self):
+        archives = QFileDialog.getOpenFileNames(self, 'Select archives to be installed')
+        if not archives:
+            return
+        for archive in archives[0]:
+            try:
+                suff = Path(archive).suffix
+                folder_name = Path(archive).stem
+                target_folder = (self.target_preset_folder / folder_name)
+                shutil.unpack_archive(archive, target_folder)
+            except shutil.ReadError:
+                QMessageBox.warning(self, '', f'Sorry, but {suff}-archives is not supported')
+            else:
+                self.add_mod(target_folder)
+
+    def add_mod(self, folder_path: Path):
+        folder = QFileDialog.getExistingDirectory(self, 'Choose subfolder', str(folder_path))
+        if not folder:
             return
         folder_name = Path(folder_path).stem
         text, ok = QInputDialog.getText(
@@ -171,8 +191,7 @@ class Ui(QMainWindow):
         if ok:
             self.add_row_to_mods({
                 'name': text,
-                'folder_name': folder_name,
-                'subfolder': subfolder,
+                'path': folder,
                 'enabled': False
             })
 
