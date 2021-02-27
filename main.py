@@ -1,9 +1,7 @@
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QDir, QAbstractTableModel, QStringListModel
-from PyQt5.QtGui import QStandardItem, QStandardItemModel, QStaticText
-from PyQt5.QtWidgets import QCheckBox, QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QTableWidgetItem, QMainWindow
 from PyQt5.uic import loadUi
 import modpack
 import json
