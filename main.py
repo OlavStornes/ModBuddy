@@ -38,13 +38,13 @@ class Ui(QMainWindow):
 
         # - Game
         self.new_game_button.clicked.connect(self.create_new_game)
-        self.load_game_button.clicked.connect(self.load_game)
+        self.load_game_button.clicked.connect(self.load_targeted_game)
         self.initialize_mod.clicked.connect(self.letsgo_mydudes)
 
         self.update_fileview(str(OUTPUT_FOLDER))
         self.update_game_combobox()
         self.init_tablewidget()
-
+        self.retrieve_last_activity()
         self.show()
 
     @staticmethod
@@ -71,6 +71,26 @@ class Ui(QMainWindow):
         for x in GAME_PRESET_FOLDER.iterdir():
             self.game_combobox.addItem(x.stem)
 
+    def update_last_activity(self):
+        last_activity = {
+            'game': self.get_current_game(),
+            'profile': self.get_current_profile()
+        }
+        self.settings['lastactivity'] = last_activity
+        print("updated")
+        print(last_activity)
+        Path(SETTINGS_NAME).write_text(
+            json.dumps(self.settings, indent=4))
+
+    def retrieve_last_activity(self):
+
+        last = self.settings.get('lastactivity')
+        if last:
+            game = last.get('game')
+            profile = last.get('profile')
+            self.load_game(game)
+            self.load_profile(profile)
+
     def update_profile_combobox(self):
         self.profile_combobox.clear()
         for x in self.game_setting.get('profiles'):
@@ -88,10 +108,14 @@ class Ui(QMainWindow):
         Path(self.target_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(self.game_setting, indent=4))
 
+    def load_profile(self, target_profile: str):
+        self.current_profile = self.game_setting.get(target_profile)
+        self.init_tablewidget()
+
     def load_current_profile(self):
         preset = self.get_current_profile()
-        self.current_profile = self.game_setting.get(preset)
-        self.init_tablewidget()
+        self.load_profile(preset)
+        self.update_last_activity()
 
     def update_fileview(self, path):
         index = self.filesystem_model.index(path)
@@ -124,11 +148,15 @@ class Ui(QMainWindow):
             json.dumps(preset, indent=4))
         self.update_game_combobox()
 
-    def load_game(self):
-        target_preset = self.get_current_game()
+    def load_game(self, target_preset):
         self.target_preset_folder = GAME_PRESET_FOLDER / target_preset
         self.game_setting = json.loads((self.target_preset_folder / PRESET_FILE_NAME).read_text())
         self.update_profile_combobox()
+
+    def load_targeted_game(self):
+        target_game = self.get_current_game()
+        self.load_game(target_game)
+        self.update_last_activity()
 
     def install_new_mod(self):
         folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')
