@@ -96,6 +96,11 @@
               <string>Subfolder</string>
              </property>
             </column>
+            <column>
+             <property name="text">
+              <string>Enabled</string>
+             </property>
+            </column>
            </widget>
           </item>
           <item>

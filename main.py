@@ -3,7 +3,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QDir, QAbstractTableModel, QStringListModel
 from PyQt5.QtGui import QStandardItem, QStandardItemModel, QStaticText
-from PyQt5.QtWidgets import QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QCheckBox, QTableWidgetItem, QMainWindow
 from PyQt5.uic import loadUi
 import modpack
 import json
@@ -11,7 +11,7 @@ import sys
 
 INPUT_FOLDER = 'input'
 SETTINGS_NAME = 'settings.json'
-ROOT_FOLDER_NAME = 'root_folder'
+ROOT_FOLDER_NAME = 'gamedata'
 OUTPUT_FOLDER = Path('output') / ROOT_FOLDER_NAME
 
 
@@ -39,7 +39,8 @@ class Ui(QMainWindow):
             output.append({
                 'name': table.item(i, 0).text(),
                 'folder_name': table.item(i, 1).text(),
-                'subfolder': table.item(i, 2).text()
+                'subfolder': table.item(i, 2).text(),
+                'enabled': bool(table.item(i, 3).checkState())
             })
         return output
 
@@ -49,9 +50,9 @@ class Ui(QMainWindow):
         self.statusbar.showMessage(f"Settings saved to {SETTINGS_NAME}")
 
     def init_fileview(self):
-        self.model = QtWidgets.QFileSystemModel()
-        self.model.setRootPath(QDir.currentPath())
-        self.file_view.setModel(self.model)
+        self.filesystem_model = QtWidgets.QFileSystemModel()
+        self.filesystem_model.setRootPath('home')
+        self.file_view.setModel(self.filesystem_model)
 
     def move_row_up(self):
         row = self.mod_list.currentRow()
@@ -81,14 +82,24 @@ class Ui(QMainWindow):
             self.mod_list.setItem(i, 0, QTableWidgetItem(row.get('name')))
             self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('folder_name')))
             self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('subfolder')))
+            is_enabled = row.get('enabled')
+            chkBoxItem = QTableWidgetItem()
+            chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            if is_enabled:
+                chkBoxItem.setCheckState(QtCore.Qt.Checked)
+            else:
+                chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
+
+            self.mod_list.setItem(i, 3, QTableWidgetItem(chkBoxItem))
 
     def letsgo_mydudes(self):
         conf = self.export_modlist_to_list(self.mod_list)
         in_p = Path(INPUT_FOLDER)
         for single_mod in conf:
-            print("~~~~ Adding {}".format(single_mod.get('name')))
-            target_folder = in_p / single_mod.get('folder_name') / single_mod.get('subfolder')
-            modpack.ModPack(target_folder, OUTPUT_FOLDER)
+            if single_mod.get('enabled'):
+                print("~~~~ Adding {}".format(single_mod.get('name')))
+                target_folder = in_p / single_mod.get('folder_name') / single_mod.get('subfolder')
+                modpack.ModPack(target_folder, OUTPUT_FOLDER)
         self.statusbar.showMessage("Modbuddy done!")
 
 
