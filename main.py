@@ -23,6 +23,7 @@ class Ui(QMainWindow):
 
         # Load settings
         self.settings = json.loads(Path(SETTINGS_NAME).read_text())
+        self.game_setting = {}
 
         # Initialize some components
         self.filesystem_model = QtWidgets.QFileSystemModel()
@@ -36,7 +37,8 @@ class Ui(QMainWindow):
         # self.load_profile_button.clicked.connect(self.load_profile)
         # self.save_profile_button.clicked.connect(self.save_table_config)
         self.new_game_button.clicked.connect(self.create_new_game_preset)
-        
+        self.load_game_preset_button.clicked.connect(self.load_game_preset)
+
         self.update_fileview(str(OUTPUT_FOLDER))
         self.update_game_combobox()
         self.init_tablewidget()
@@ -95,6 +97,13 @@ class Ui(QMainWindow):
         }
         Path(game_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(preset, indent=4))
+        self.update_game_combobox()
+
+    def load_game_preset(self):
+        target_preset = self.game_combobox.currentText()
+        preset_folder = GAME_PRESET_FOLDER / target_preset
+        self.game_setting = json.loads((preset_folder / PRESET_FILE_NAME).read_text())
+
 
     def install_new_mod(self):
         folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')
@@ -152,7 +161,8 @@ class Ui(QMainWindow):
             self.mod_list.removeRow(row)
 
     def init_tablewidget(self):
-        for row in self.settings:
+        self.mod_list.clear()
+        for row in self.game_setting:
             self.add_row_to_mods(row)
 
     def letsgo_mydudes(self):
