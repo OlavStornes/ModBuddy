@@ -34,6 +34,7 @@ class Ui(QMainWindow):
         self.move_down.clicked.connect(self.move_row_down)
         self.new_mod_button.clicked.connect(self.install_new_mod)
         self.new_mod_archived_button.clicked.connect(self.install_new_archived_mod)
+        self.clean_modfolder_button.clicked.connect(self.clean_target_modfolder)
 
         # - Game profiles
         self.load_profile_button.clicked.connect(self.load_current_profile)
@@ -214,9 +215,8 @@ class Ui(QMainWindow):
         else:
             chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
         self.mod_list.setItem(i, 0, QTableWidgetItem(row.get('name')))
-        self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('folder_name')))
-        self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('subfolder')))
-        self.mod_list.setItem(i, 3, QTableWidgetItem(chkBoxItem))
+        self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('path')))
+        self.mod_list.setItem(i, 2, QTableWidgetItem(chkBoxItem))
 
     def move_row_up(self):
         row = self.mod_list.currentRow()
@@ -244,6 +244,19 @@ class Ui(QMainWindow):
         current_preset = self.game_setting.get(self.get_current_profile()) or []
         for row in current_preset:
             self.add_row_to_mods(row)
+
+    def clean_target_modfolder(self):
+        target_modfolder = Path(self.game_setting.get('game_mod_folder'))
+        if not target_modfolder:
+            QMessageBox.warning(self, '', 'No target modfolder found')
+        else:
+            del_path_target = target_modfolder.resolve()
+            x = QMessageBox.question(
+                self, 'DELETING FOLDER', f"Are you sure you want to delete \
+everything inside this folder?\n{del_path_target}")
+        if x == QMessageBox.Yes:
+            for subpath in del_path_target.iterdir():
+                shutil.rmtree(subpath)
 
     def letsgo_mydudes(self):
         conf = self.export_modlist_to_list(self.mod_list)
