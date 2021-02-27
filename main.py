@@ -152,6 +152,7 @@ class Ui(QMainWindow):
     def load_game(self, target_preset):
         self.target_preset_folder = GAME_PRESET_FOLDER / target_preset
         self.game_setting = json.loads((self.target_preset_folder / PRESET_FILE_NAME).read_text())
+        self.mod_dest.setText(self.game_setting.get('game_root_folder'))
         self.update_profile_combobox()
 
     def load_targeted_game(self):
