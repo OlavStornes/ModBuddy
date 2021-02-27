@@ -61,6 +61,7 @@ class Ui(QMainWindow):
 
     def install_new_mod(self):
         folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')
+        subfolder = QFileDialog.getExistingDirectory(self, 'Choose subfolder', folder_path)
         folder_name = Path(folder_path).stem
         text, ok = QInputDialog.getText(
             self, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
@@ -68,7 +69,7 @@ class Ui(QMainWindow):
             self.add_row_to_mods({
                 'name': text,
                 'folder_name': folder_name,
-                'subfolder': folder_name,
+                'subfolder': subfolder,
                 'enabled': False
             })
 
