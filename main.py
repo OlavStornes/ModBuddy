@@ -1,7 +1,7 @@
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QTableWidgetItem, QMainWindow
 from PyQt5.uic import loadUi
 import modpack
 import json
@@ -18,6 +18,9 @@ class Ui(QMainWindow):
         super(Ui, self).__init__()
         loadUi('ui/modbuddy.ui', self)
 
+        # Initialize some components
+        self.filesystem_model = QtWidgets.QFileSystemModel()
+
         # Connect buttons
         self.initialize_mod.clicked.connect(self.letsgo_mydudes)
         self.move_up.clicked.connect(self.move_row_up)
@@ -26,7 +29,7 @@ class Ui(QMainWindow):
         self.new_mod_button.clicked.connect(self.install_new_mod)
         self.mod_dest_button.clicked.connect(self.choose_mod_dest)
 
-        self.init_fileview()
+        self.update_fileview(str(OUTPUT_FOLDER))
 
         self.init_tablewidget()
 
@@ -49,18 +52,46 @@ class Ui(QMainWindow):
         Path(SETTINGS_NAME).write_text(json.dumps(config, indent=4))
         self.statusbar.showMessage(f"Settings saved to {SETTINGS_NAME}")
 
-    def init_fileview(self):
-        self.filesystem_model = QtWidgets.QFileSystemModel()
-        self.filesystem_model.setRootPath('home')
+    def update_fileview(self, path):
+        # self.filesystem_model.setRootPath(QtCore.QDir.currentPath())
+        index = self.filesystem_model.index(path)
+        self.filesystem_model.setRootPath(path)
         self.file_view.setModel(self.filesystem_model)
+        self.file_view.expand(index)
 
     def install_new_mod(self):
-        tmp = QFileDialog.getExistingDirectory(self, 'Install mod')
-        print(tmp)
+        folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')
+        folder_name = Path(folder_path).stem
+        text, ok = QInputDialog.getText(
+            self, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
+        if ok:
+            self.add_row_to_mods({
+                'name': text,
+                'folder_name': folder_name,
+                'subfolder': folder_name,
+                'enabled': False
+            })
+
+    def add_row_to_mods(self, row: dict):
+        i = self.mod_list.rowCount()
+        self.mod_list.insertRow(i)
+        chkBoxItem = QTableWidgetItem()
+        chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+        is_enabled = row.get('enabled')
+        if is_enabled:
+            chkBoxItem.setCheckState(QtCore.Qt.Checked)
+        else:
+            chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
+        self.mod_list.setItem(i, 0, QTableWidgetItem(row.get('name')))
+        self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('folder_name')))
+        self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('subfolder')))
+        self.mod_list.setItem(i, 3, QTableWidgetItem(chkBoxItem))
 
     def choose_mod_dest(self):
         tmp = QFileDialog.getExistingDirectory(self, 'Choose mod destination')
         self.mod_dest.setText(tmp)
+        self.update_fileview(tmp)
+
 
     def move_row_up(self):
         row = self.mod_list.currentRow()
@@ -85,20 +116,8 @@ class Ui(QMainWindow):
 
     def init_tablewidget(self):
         settings = json.loads(Path(SETTINGS_NAME).read_text())
-        for i, row in enumerate(settings):
-            self.mod_list.insertRow(i)
-            self.mod_list.setItem(i, 0, QTableWidgetItem(row.get('name')))
-            self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('folder_name')))
-            self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('subfolder')))
-            is_enabled = row.get('enabled')
-            chkBoxItem = QTableWidgetItem()
-            chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-            if is_enabled:
-                chkBoxItem.setCheckState(QtCore.Qt.Checked)
-            else:
-                chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
-
-            self.mod_list.setItem(i, 3, QTableWidgetItem(chkBoxItem))
+        for row in settings:
+            self.add_row_to_mods(row)
 
     def letsgo_mydudes(self):
         conf = self.export_modlist_to_list(self.mod_list)
