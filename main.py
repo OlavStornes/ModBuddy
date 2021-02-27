@@ -1,13 +1,13 @@
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QDialog, QFileDialog, QInputDialog, QLineEdit, QMessageBox, QTableWidgetItem, QMainWindow
 from PyQt5.uic import loadUi
 import modpack
 import json
 import sys
 
-INPUT_FOLDER = 'input'
+INPUT_FOLDER = Path('input')
 SETTINGS_NAME = 'settings.json'
 ROOT_FOLDER_NAME = 'gamedata'
 OUTPUT_FOLDER = Path('output') / ROOT_FOLDER_NAME
@@ -92,7 +92,6 @@ class Ui(QMainWindow):
         self.mod_dest.setText(tmp)
         self.update_fileview(tmp)
 
-
     def move_row_up(self):
         row = self.mod_list.currentRow()
         column = self.mod_list.currentColumn()
@@ -121,13 +120,13 @@ class Ui(QMainWindow):
 
     def letsgo_mydudes(self):
         conf = self.export_modlist_to_list(self.mod_list)
-        in_p = Path(INPUT_FOLDER)
         for single_mod in conf:
             if single_mod.get('enabled'):
                 print("~~~~ Adding {}".format(single_mod.get('name')))
-                target_folder = in_p / single_mod.get('folder_name') / single_mod.get('subfolder')
+                target_folder = INPUT_FOLDER / single_mod.get('folder_name') / single_mod.get('subfolder')
                 modpack.ModPack(target_folder, OUTPUT_FOLDER)
         self.statusbar.showMessage("Modbuddy done!")
+        QMessageBox.information(self, 'Done', 'Mods are loaded!')
 
 
 if __name__ == "__main__":
