@@ -55,9 +55,8 @@ class Ui(QMainWindow):
         for i in range(table.rowCount()):
             output.append({
                 'name': table.item(i, 0).text(),
-                'folder_name': table.item(i, 1).text(),
-                'subfolder': table.item(i, 2).text(),
-                'enabled': bool(table.item(i, 3).checkState())
+                'path': table.item(i, 1).text(),
+                'enabled': bool(table.item(i, 2).checkState())
             })
 
         return output
