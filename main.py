@@ -28,6 +28,7 @@ class Ui(QMainWindow):
         self.save_settings.clicked.connect(self.save_table_config)
         self.new_mod_button.clicked.connect(self.install_new_mod)
         self.mod_dest_button.clicked.connect(self.choose_mod_dest)
+        self.new_game_button.clicked.connect(self.create_new_game_preset)
 
         self.update_fileview(str(OUTPUT_FOLDER))
 
@@ -57,6 +58,19 @@ class Ui(QMainWindow):
         self.filesystem_model.setRootPath(path)
         self.file_view.setModel(self.filesystem_model)
         self.file_view.expand(index)
+
+    def create_new_game_preset(self):
+        game_path = QFileDialog.getExistingDirectory(self, 'Get game folder')
+        game_mod_folder = QFileDialog.getExistingDirectory(
+            self, 'Get volatile mod folder', game_path
+        )
+        text, ok = QInputDialog.getText(
+            self, "", "Game preset name:", QLineEdit.Normal, Path(game_path).stem)
+        if ok:
+            QMessageBox.information(self, 'Done', 'Game is set up and ready to go!')
+
+        print(game_path, game_mod_folder, text)
+
 
     def install_new_mod(self):
         folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')

@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1392</width>
-    <height>728</height>
+    <width>1463</width>
+    <height>809</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Mod buddy</string>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -19,40 +22,80 @@
      <widget class="QGroupBox" name="groupBox">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QPushButton" name="new_mod_button">
-         <property name="text">
-          <string>Install new mod</string>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QPushButton" name="new_mod_button">
+           <property name="text">
+            <string>Import mod from folder</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="new_mod_archived_button">
+           <property name="text">
+            <string>Get mod from archive</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
-        <widget class="QWidget" name="widget_4" native="true">
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QLabel" name="label">
+        <widget class="QGroupBox" name="profile_group">
+         <property name="title">
+          <string>Profiles</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0" colspan="2">
+           <widget class="QComboBox" name="profile_combobox"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="load_profile_button">
             <property name="text">
-             <string>Number of mods:</string>
+             <string>Load profile</string>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QLCDNumber" name="num_mods"/>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="save_profile_button">
+            <property name="text">
+             <string>Save profile</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="save_settings">
-         <property name="text">
-          <string>Create backup</string>
+        <widget class="QGroupBox" name="game_group">
+         <property name="title">
+          <string>Game</string>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="initialize_mod">
-         <property name="text">
-          <string>LETS GO MAH DUDES</string>
-         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="2" column="2">
+           <widget class="QPushButton" name="save_game_preset">
+            <property name="text">
+             <string>Save game target</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="load_game_preset">
+            <property name="text">
+             <string>Load game target</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="new_game_button">
+            <property name="text">
+             <string>New game</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="3">
+           <widget class="QComboBox" name="game_combobox"/>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -62,10 +105,19 @@
      <widget class="QWidget" name="main_component" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QWidget" name="mods_component" native="true">
+        <widget class="QGroupBox" name="mods_component">
+         <property name="title">
+          <string>Mod table</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="QTableWidget" name="mod_list">
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
             <property name="contextMenuPolicy">
              <enum>Qt::NoContextMenu</enum>
             </property>
@@ -105,6 +157,9 @@
             <column>
              <property name="text">
               <string>Enabled</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignLeading|AlignVCenter</set>
              </property>
             </column>
            </widget>
@@ -159,7 +214,19 @@
         </widget>
        </item>
        <item>
-        <widget class="QWidget" name="dir_component" native="true">
+        <widget class="QGroupBox" name="dir_component">
+         <property name="title">
+          <string>Target game</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
            <widget class="QWidget" name="dest_component" native="true">
@@ -202,7 +269,7 @@
                </property>
               </widget>
              </item>
-             <item>
+             <item alignment="Qt::AlignRight">
               <widget class="QPushButton" name="mod_dest_button">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -227,6 +294,19 @@
       </layout>
      </widget>
     </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="initialize_mod">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>32</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>LETS GO MAH DUDES</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -234,27 +314,12 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1392</width>
+     <width>1463</width>
      <height>27</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuInstall_new_mod">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionInstall_new_mod"/>
-   </widget>
-   <addaction name="menuInstall_new_mod"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionInstall_new_mod">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Install new mod</string>
-   </property>
-  </action>
  </widget>
  <resources/>
  <connections/>
