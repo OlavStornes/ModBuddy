@@ -38,7 +38,7 @@ class Ui(QMainWindow):
         self.new_game_button.clicked.connect(self.create_new_game_preset)
         
         self.update_fileview(str(OUTPUT_FOLDER))
-        self.init_game_combobox()
+        self.update_game_combobox()
         self.init_tablewidget()
 
         self.show()
@@ -56,10 +56,10 @@ class Ui(QMainWindow):
 
         return output
 
-    def init_game_combobox(self):
-        self.game_combobox.addItem('tet')
-        self.game_combobox.addItem('tet1')
-        self.game_combobox.addItem('tet2')
+    def update_game_combobox(self):
+        self.game_combobox.clear()
+        for x in GAME_PRESET_FOLDER.iterdir():
+            self.game_combobox.addItem(x.stem)
 
     def save_table_config(self):
         config = self.export_modlist_to_list(self.mod_list)
