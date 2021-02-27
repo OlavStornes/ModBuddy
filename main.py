@@ -160,7 +160,11 @@ class Ui(QMainWindow):
 
     def install_new_mod(self):
         folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')
+        if not folder_path:
+            return
         subfolder = QFileDialog.getExistingDirectory(self, 'Choose subfolder', folder_path)
+        if not subfolder:
+            return
         folder_name = Path(folder_path).stem
         text, ok = QInputDialog.getText(
             self, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
