@@ -1,7 +1,7 @@
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QDialog, QFileDialog, QInputDialog, QLineEdit, QMessageBox, QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QTableWidgetItem, QMainWindow
 from PyQt5.uic import loadUi
 import modpack
 import json
@@ -53,7 +53,6 @@ class Ui(QMainWindow):
         self.statusbar.showMessage(f"Settings saved to {SETTINGS_NAME}")
 
     def update_fileview(self, path):
-        # self.filesystem_model.setRootPath(QtCore.QDir.currentPath())
         index = self.filesystem_model.index(path)
         self.filesystem_model.setRootPath(path)
         self.file_view.setModel(self.filesystem_model)
