@@ -20,7 +20,6 @@ class Ui(QMainWindow):
         super(Ui, self).__init__()
         loadUi('ui/modbuddy.ui', self)
 
-
         # Load settings
         self.settings = json.loads(Path(SETTINGS_NAME).read_text())
         self.game_setting = {}
@@ -29,15 +28,18 @@ class Ui(QMainWindow):
         self.filesystem_model = QtWidgets.QFileSystemModel()
 
         # Connect buttons
-        self.initialize_mod.clicked.connect(self.letsgo_mydudes)
         self.move_up.clicked.connect(self.move_row_up)
         self.move_down.clicked.connect(self.move_row_down)
         self.new_mod_button.clicked.connect(self.install_new_mod)
-        self.mod_dest_button.clicked.connect(self.choose_mod_dest)
-        self.load_profile_button.clicked.connect(self.load_profile)
-        self.save_profile_button.clicked.connect(self.save_table_config)
-        self.new_game_button.clicked.connect(self.create_new_game_preset)
-        self.load_game_preset_button.clicked.connect(self.load_game_preset)
+
+        # - Game profiles
+        self.load_profile_button.clicked.connect(self.load_current_profile)
+        self.save_profile_button.clicked.connect(self.save_mod_table_config)
+
+        # - Game
+        self.new_game_button.clicked.connect(self.create_new_game)
+        self.load_game_button.clicked.connect(self.load_game)
+        self.initialize_mod.clicked.connect(self.letsgo_mydudes)
 
         self.update_fileview(str(OUTPUT_FOLDER))
         self.update_game_combobox()
@@ -61,33 +63,33 @@ class Ui(QMainWindow):
     def get_current_game(self) -> str:
         return self.game_combobox.currentText()
 
-    def get_current_preset(self) -> str:
+    def get_current_profile(self) -> str:
         return self.profile_combobox.currentText()
 
     def update_game_combobox(self):
         self.game_combobox.clear()
         for x in GAME_PRESET_FOLDER.iterdir():
             self.game_combobox.addItem(x.stem)
-        
-    def update_preset_combobox(self):
+
+    def update_profile_combobox(self):
         self.profile_combobox.clear()
         for x in self.game_setting.get('profiles'):
             self.profile_combobox.addItem(x)
 
-    def save_table_config(self):
+    def save_mod_table_config(self):
         preset_name, ok = QInputDialog.getText(
-            self, "", "Preset name:", QLineEdit.Normal, self.get_current_preset())
+            self, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
         if not ok:
             return
-        
+
         config = self.export_modlist_to_list(self.mod_list)
         self.game_setting[preset_name] = config
 
         Path(self.target_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(self.game_setting, indent=4))
 
-    def load_profile(self):
-        preset = self.get_current_preset()
+    def load_current_profile(self):
+        preset = self.get_current_profile()
         self.current_profile = self.game_setting.get(preset)
         self.init_tablewidget()
 
@@ -97,7 +99,7 @@ class Ui(QMainWindow):
         self.file_view.setModel(self.filesystem_model)
         self.file_view.expand(index)
 
-    def create_new_game_preset(self):
+    def create_new_game(self):
         game_path = QFileDialog.getExistingDirectory(self, 'Get game folder')
         game_mod_folder = QFileDialog.getExistingDirectory(
             self, 'Get volatile mod folder', game_path
@@ -118,16 +120,15 @@ class Ui(QMainWindow):
             },
             'mods': []
         }
-        Path(game_preset_folder / PRESET_FILE_NAME).write_text(
+        Path(self.game_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(preset, indent=4))
         self.update_game_combobox()
 
-    def load_game_preset(self):
+    def load_game(self):
         target_preset = self.get_current_game()
         self.target_preset_folder = GAME_PRESET_FOLDER / target_preset
         self.game_setting = json.loads((self.target_preset_folder / PRESET_FILE_NAME).read_text())
-        self.update_preset_combobox()
-
+        self.update_profile_combobox()
 
     def install_new_mod(self):
         folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')
@@ -158,11 +159,6 @@ class Ui(QMainWindow):
         self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('subfolder')))
         self.mod_list.setItem(i, 3, QTableWidgetItem(chkBoxItem))
 
-    def choose_mod_dest(self):
-        tmp = QFileDialog.getExistingDirectory(self, 'Choose mod destination')
-        self.mod_dest.setText(tmp)
-        self.update_fileview(tmp)
-
     def move_row_up(self):
         row = self.mod_list.currentRow()
         column = self.mod_list.currentColumn()
@@ -186,7 +182,7 @@ class Ui(QMainWindow):
 
     def init_tablewidget(self):
         self.mod_list.clearContents()
-        current_preset = self.game_setting.get(self.get_current_preset()) or []
+        current_preset = self.game_setting.get(self.get_current_profile()) or []
         for row in current_preset:
             self.add_row_to_mods(row)
 
