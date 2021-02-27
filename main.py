@@ -11,12 +11,18 @@ INPUT_FOLDER = Path('input')
 SETTINGS_NAME = 'settings.json'
 ROOT_FOLDER_NAME = 'gamedata'
 OUTPUT_FOLDER = Path('output') / ROOT_FOLDER_NAME
+GAME_PRESET_FOLDER = Path('games')
+PRESET_FILE_NAME = 'modlist.json'
 
 
 class Ui(QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
         loadUi('ui/modbuddy.ui', self)
+
+
+        # Load settings
+        self.settings = json.loads(Path(SETTINGS_NAME).read_text())
 
         # Initialize some components
         self.filesystem_model = QtWidgets.QFileSystemModel()
@@ -25,13 +31,14 @@ class Ui(QMainWindow):
         self.initialize_mod.clicked.connect(self.letsgo_mydudes)
         self.move_up.clicked.connect(self.move_row_up)
         self.move_down.clicked.connect(self.move_row_down)
-        self.save_settings.clicked.connect(self.save_table_config)
         self.new_mod_button.clicked.connect(self.install_new_mod)
         self.mod_dest_button.clicked.connect(self.choose_mod_dest)
+        # self.load_profile_button.clicked.connect(self.load_profile)
+        # self.save_profile_button.clicked.connect(self.save_table_config)
         self.new_game_button.clicked.connect(self.create_new_game_preset)
-
+        
         self.update_fileview(str(OUTPUT_FOLDER))
-
+        self.init_game_combobox()
         self.init_tablewidget()
 
         self.show()
@@ -46,7 +53,13 @@ class Ui(QMainWindow):
                 'subfolder': table.item(i, 2).text(),
                 'enabled': bool(table.item(i, 3).checkState())
             })
+
         return output
+
+    def init_game_combobox(self):
+        self.game_combobox.addItem('tet')
+        self.game_combobox.addItem('tet1')
+        self.game_combobox.addItem('tet2')
 
     def save_table_config(self):
         config = self.export_modlist_to_list(self.mod_list)
@@ -64,13 +77,24 @@ class Ui(QMainWindow):
         game_mod_folder = QFileDialog.getExistingDirectory(
             self, 'Get volatile mod folder', game_path
         )
-        text, ok = QInputDialog.getText(
+        game_preset_name, ok = QInputDialog.getText(
             self, "", "Game preset name:", QLineEdit.Normal, Path(game_path).stem)
         if ok:
             QMessageBox.information(self, 'Done', 'Game is set up and ready to go!')
 
-        print(game_path, game_mod_folder, text)
+        game_preset_folder = GAME_PRESET_FOLDER / game_preset_name
+        game_preset_folder.mkdir()
 
+        preset = {
+            'game_root_folder': game_path,
+            'game_mod_folder': game_mod_folder,
+            'profiles': {
+                'default': {}
+            },
+            'mods': []
+        }
+        Path(game_preset_folder / PRESET_FILE_NAME).write_text(
+            json.dumps(preset, indent=4))
 
     def install_new_mod(self):
         folder_path = QFileDialog.getExistingDirectory(self, 'Install mod')
@@ -128,8 +152,7 @@ class Ui(QMainWindow):
             self.mod_list.removeRow(row)
 
     def init_tablewidget(self):
-        settings = json.loads(Path(SETTINGS_NAME).read_text())
-        for row in settings:
+        for row in self.settings:
             self.add_row_to_mods(row)
 
     def letsgo_mydudes(self):
