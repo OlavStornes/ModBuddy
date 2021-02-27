@@ -7,7 +7,6 @@ class ModPack():
         self.mod_folder = mod_folder
         self.mod_root_folder = mod_folder
         self.out_p = destination_folder
-        self.add_mod()
 
     def convert_from_input_to_output(self, in_path: Path):
         abs_input = str(in_path.resolve()) 
@@ -35,3 +34,11 @@ class ModPack():
                 self.create_folder(input_path)
                 continue
             self.handle_symlinking(input_path)
+
+
+def initialize_configs(config_payload: dict, input_folder: Path, output_folder: Path):
+    for single_mod in config_payload:
+        if single_mod.get('enabled'):
+            target_folder = input_folder / single_mod.get('folder_name') / single_mod.get('subfolder')
+            x = ModPack(target_folder, output_folder)
+            x.add_mod()

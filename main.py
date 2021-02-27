@@ -123,11 +123,12 @@ class Ui(QMainWindow):
 
         x = QMessageBox.question(self, '', "are u sure")
         if x == QMessageBox.Yes:
-            for single_mod in conf:
-                if single_mod.get('enabled'):
-                    target_folder = INPUT_FOLDER / single_mod.get('folder_name') / single_mod.get('subfolder')
-                    modpack.ModPack(target_folder, OUTPUT_FOLDER)
-            QMessageBox.information(self, 'Done', 'Mods are loaded!')
+            try:
+                modpack.initialize_configs(conf, INPUT_FOLDER, OUTPUT_FOLDER)
+            except Exception:
+                QMessageBox.warning(self, '', 'Something went wrong')
+            else:
+                QMessageBox.information(self, 'Done', 'Mods are loaded!')
 
 
 if __name__ == "__main__":
