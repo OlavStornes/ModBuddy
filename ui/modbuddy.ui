@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1584</width>
-    <height>762</height>
+    <width>1392</width>
+    <height>728</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,17 +19,26 @@
      <widget class="QGroupBox" name="groupBox">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="new_mod_button">
          <property name="text">
           <string>Install new mod</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
-         <property name="text">
-          <string>Choose destination</string>
-         </property>
+        <widget class="QWidget" name="widget_4" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Number of mods:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLCDNumber" name="num_mods"/>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
@@ -46,17 +55,14 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QLCDNumber" name="num_mods"/>
-       </item>
       </layout>
      </widget>
     </item>
-    <item row="1" column="0">
-     <widget class="QWidget" name="widget" native="true">
+    <item row="2" column="0">
+     <widget class="QWidget" name="main_component" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QWidget" name="widget_2" native="true">
+        <widget class="QWidget" name="mods_component" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
            <widget class="QTableWidget" name="mod_list">
@@ -104,7 +110,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QWidget" name="widget_3" native="true">
+           <widget class="QWidget" name="mod_controls" native="true">
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
               <spacer name="verticalSpacer">
@@ -153,7 +159,73 @@
         </widget>
        </item>
        <item>
-        <widget class="QTreeView" name="file_view"/>
+        <widget class="QWidget" name="dir_component" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QWidget" name="dest_component" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item alignment="Qt::AlignLeft">
+              <widget class="QLabel" name="label_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>2</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Mod destination folder:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="mod_dest">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>239</width>
+                 <height>32</height>
+                </size>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="mod_dest_button">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Choose destination</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="file_view"/>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -165,7 +237,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1584</width>
+     <width>1392</width>
      <height>27</height>
     </rect>
    </property>

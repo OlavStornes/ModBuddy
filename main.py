@@ -1,7 +1,7 @@
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QTableWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QMainWindow
 from PyQt5.uic import loadUi
 import modpack
 import json
@@ -23,6 +23,8 @@ class Ui(QMainWindow):
         self.move_up.clicked.connect(self.move_row_up)
         self.move_down.clicked.connect(self.move_row_down)
         self.save_settings.clicked.connect(self.save_table_config)
+        self.new_mod_button.clicked.connect(self.install_new_mod)
+        self.mod_dest_button.clicked.connect(self.choose_mod_dest)
 
         self.init_fileview()
 
@@ -51,6 +53,14 @@ class Ui(QMainWindow):
         self.filesystem_model = QtWidgets.QFileSystemModel()
         self.filesystem_model.setRootPath('home')
         self.file_view.setModel(self.filesystem_model)
+
+    def install_new_mod(self):
+        tmp = QFileDialog.getExistingDirectory(self, 'Install mod')
+        print(tmp)
+
+    def choose_mod_dest(self):
+        tmp = QFileDialog.getExistingDirectory(self, 'Choose mod destination')
+        self.mod_dest.setText(tmp)
 
     def move_row_up(self):
         row = self.mod_list.currentRow()
