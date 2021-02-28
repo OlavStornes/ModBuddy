@@ -181,7 +181,8 @@ class Ui(QMainWindow):
         self.add_mod(Path(GAME_PRESET_FOLDER / self.game_setting.get('game_preset_folder')))
 
     def install_new_archived_mod(self):
-        archives = QFileDialog.getOpenFileNames(self, 'Select archives to be installed', str(Path.home()))
+        archives = QFileDialog.getOpenFileNames(
+            self, 'Select archives to be installed', str(Path.home()), "Supported archives (*.zip *.tar)")
         if not archives:
             return
         for archive in archives[0]:
