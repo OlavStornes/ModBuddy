@@ -184,6 +184,14 @@
             </attribute>
             <column>
              <property name="text">
+              <string>Enabled</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignLeading|AlignVCenter</set>
+             </property>
+            </column>
+            <column>
+             <property name="text">
               <string>Name</string>
              </property>
              <property name="font">
@@ -196,14 +204,6 @@
             <column>
              <property name="text">
               <string>Folder</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Enabled</string>
-             </property>
-             <property name="textAlignment">
-              <set>AlignLeading|AlignVCenter</set>
              </property>
             </column>
            </widget>

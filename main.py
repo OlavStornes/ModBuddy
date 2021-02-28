@@ -53,9 +53,9 @@ class Ui(QMainWindow):
         output = []
         for i in range(table.rowCount()):
             output.append({
-                'name': table.item(i, 0).text(),
-                'path': table.item(i, 1).text(),
-                'enabled': bool(table.item(i, 2).checkState())
+                'enabled': bool(table.item(i, 0).checkState()),
+                'name': table.item(i, 1).text(),
+                'path': table.item(i, 2).text()
             })
 
         return output
@@ -220,9 +220,9 @@ class Ui(QMainWindow):
             chkBoxItem.setCheckState(QtCore.Qt.Checked)
         else:
             chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
-        self.mod_list.setItem(i, 0, QTableWidgetItem(row.get('name')))
-        self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('path')))
-        self.mod_list.setItem(i, 2, QTableWidgetItem(chkBoxItem))
+        self.mod_list.setItem(i, 0, QTableWidgetItem(chkBoxItem))
+        self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('name')))
+        self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('path')))
         self.mod_list.resizeColumnsToContents()
 
     def move_row_up(self):
