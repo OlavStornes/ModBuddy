@@ -13,7 +13,7 @@ SETTINGS_NAME = 'settings.json'
 ROOT_FOLDER_NAME = 'gamedata'
 OUTPUT_FOLDER = Path('output') / ROOT_FOLDER_NAME
 GAME_PRESET_FOLDER = Path('games')
-PRESET_FILE_NAME = 'modlist.json'
+PRESET_FILE_NAME = 'game_setting.json'
 
 
 class Ui(QMainWindow):
@@ -63,7 +63,7 @@ class Ui(QMainWindow):
     def init_settings(self):
         try:
             self.settings = json.loads(Path(SETTINGS_NAME).read_text())
-        except FileNotFoundError:
+        except (FileNotFoundError, json.JSONDecodeError):
             self.settings = {}
         self.game_setting = {}
 
@@ -136,18 +136,23 @@ class Ui(QMainWindow):
 
     def create_new_game(self):
         game_path = QFileDialog.getExistingDirectory(self, 'Get game folder')
+        if not game_path:
+            return
         game_mod_folder = QFileDialog.getExistingDirectory(
             self, 'Get volatile mod folder', game_path
         )
+        if not game_mod_folder:
+            return
         game_preset_name, ok = QInputDialog.getText(
             self, "", "Game preset name:", QLineEdit.Normal, Path(game_path).stem)
         if ok:
             QMessageBox.information(self, 'Done', 'Game is set up and ready to go!')
 
-        self.game_preset_folder = GAME_PRESET_FOLDER / game_preset_name
-        self.game_preset_folder.mkdir()
+        game_preset_folder = GAME_PRESET_FOLDER / game_preset_name
+        game_preset_folder.mkdir()
 
         preset = {
+            'game_preset_folder': str(game_preset_folder.resolve()),
             'game_root_folder': game_path,
             'game_mod_folder': game_mod_folder,
             'profiles': {
@@ -155,9 +160,10 @@ class Ui(QMainWindow):
             },
             'mods': []
         }
-        Path(self.game_preset_folder / PRESET_FILE_NAME).write_text(
+        Path(game_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(preset, indent=4))
         self.update_game_combobox()
+        self.update_fileview()
 
     def load_game(self, target_preset):
         self.target_preset_folder = GAME_PRESET_FOLDER / target_preset
@@ -173,10 +179,7 @@ class Ui(QMainWindow):
         self.update_last_activity()
 
     def install_new_mod(self):
-        folder_path = Path(QFileDialog.getExistingDirectory(self, 'Install mod'))
-        if not folder_path:
-            return
-        self.add_mod(folder_path)
+        self.add_mod(Path(GAME_PRESET_FOLDER / self.game_setting.get('game_preset_folder')))
 
     def install_new_archived_mod(self):
         archives = QFileDialog.getOpenFileNames(self, 'Select archives to be installed')
