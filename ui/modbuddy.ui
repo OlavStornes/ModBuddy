@@ -94,9 +94,35 @@
       </layout>
      </widget>
     </item>
+    <item row="5" column="0">
+     <widget class="QWidget" name="widget_2" native="true">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QPushButton" name="clean_modfolder_button">
+         <property name="text">
+          <string>CLEAN MODFOLDER</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="initialize_mod">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>LETS GO MAH DUDES</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="2" column="0">
-     <widget class="QWidget" name="main_component" native="true">
-      <layout class="QHBoxLayout" name="horizontalLayout">
+     <widget class="QFrame" name="main_component">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,2">
        <item>
         <widget class="QGroupBox" name="mods_component">
          <property name="title">
@@ -120,6 +146,9 @@
             <property name="contextMenuPolicy">
              <enum>Qt::NoContextMenu</enum>
             </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
             <property name="showDropIndicator" stdset="0">
              <bool>false</bool>
             </property>
@@ -135,12 +164,33 @@
             <property name="selectionBehavior">
              <enum>QAbstractItemView::SelectRows</enum>
             </property>
+            <property name="showGrid">
+             <bool>true</bool>
+            </property>
             <property name="sortingEnabled">
              <bool>false</bool>
             </property>
+            <property name="cornerButtonEnabled">
+             <bool>true</bool>
+            </property>
+            <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderCascadingSectionResizes">
+             <bool>false</bool>
+            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
              </property>
             </column>
             <column>
@@ -209,6 +259,12 @@
        </item>
        <item>
         <widget class="QGroupBox" name="dir_component">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="title">
           <string>Target game</string>
          </property>
@@ -239,32 +295,6 @@
            <widget class="QTreeView" name="file_view"/>
           </item>
          </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QWidget" name="widget_2" native="true">
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QPushButton" name="clean_modfolder_button">
-         <property name="text">
-          <string>CLEAN MODFOLDER</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="initialize_mod">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>LETS GO MAH DUDES</string>
-         </property>
         </widget>
        </item>
       </layout>
