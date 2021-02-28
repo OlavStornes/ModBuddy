@@ -21,9 +21,7 @@ class Ui(QMainWindow):
         super(Ui, self).__init__()
         loadUi('ui/modbuddy.ui', self)
 
-        # Load settings
-        self.settings = json.loads(Path(SETTINGS_NAME).read_text())
-        self.game_setting = {}
+        self.init_settings()
 
         # Initialize some components
         self.fs_mod = QFileSystemModel()
@@ -61,6 +59,13 @@ class Ui(QMainWindow):
             })
 
         return output
+
+    def init_settings(self):
+        try:
+            self.settings = json.loads(Path(SETTINGS_NAME).read_text())
+        except FileNotFoundError:
+            self.settings = {}
+        self.game_setting = {}
 
     def get_current_game(self) -> str:
         return self.game_combobox.currentText()
