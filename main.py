@@ -2,7 +2,6 @@ from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QTableWidgetItem, QMainWindow, QFileSystemModel
-from PyQt5.sip import setdestroyonexit
 from PyQt5.uic import loadUi
 import shutil
 import modpack
@@ -130,9 +129,6 @@ class Ui(QMainWindow):
         self.file_view.setRootIndex(self.fs_mod.index(path))
         self.file_view.expand(self.fs_mod.index(mod_path))
 
-
-        
-
     def create_new_game(self):
         game_path = QFileDialog.getExistingDirectory(self, 'Get game folder')
         game_mod_folder = QFileDialog.getExistingDirectory(
@@ -163,6 +159,8 @@ class Ui(QMainWindow):
         self.game_setting = json.loads((self.target_preset_folder / PRESET_FILE_NAME).read_text())
         self.mod_dest.setText(self.game_setting.get('game_root_folder'))
         self.update_profile_combobox()
+        self.load_current_profile()
+        self.update_fileview()
 
     def load_targeted_game(self):
         target_game = self.get_current_game()
@@ -241,6 +239,7 @@ class Ui(QMainWindow):
 
     def init_tablewidget(self):
         self.mod_list.clearContents()
+        self.mod_list.setRowCount(0)
         current_preset = self.game_setting.get(self.get_current_profile()) or []
         for row in current_preset:
             self.add_row_to_mods(row)
@@ -270,7 +269,7 @@ everything inside this folder?\n{del_path_target}")
         x = QMessageBox.question(self, '', "are u sure")
         if x == QMessageBox.Yes:
             try:
-                modpack.initialize_configs(conf, INPUT_FOLDER, OUTPUT_FOLDER)
+                modpack.initialize_configs(conf, INPUT_FOLDER, self.game_setting['game_mod_folder'])
             except Exception:
                 QMessageBox.warning(self, '', 'Something went wrong')
             else:

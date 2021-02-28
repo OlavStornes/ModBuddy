@@ -5,11 +5,10 @@ class ModPack():
     def __init__(self, mod_folder: Path, destination_folder: Path):
         self.modname = mod_folder.name
         self.mod_folder = mod_folder
-        self.mod_root_folder = mod_folder
         self.out_p = destination_folder
 
     def convert_from_input_to_output(self, in_path: Path):
-        abs_input = str(in_path.resolve()) 
+        abs_input = str(in_path.resolve())
         x = abs_input.replace(str(self.mod_root_folder.resolve()), '').lstrip('/')
         output = self.out_p.joinpath(x)
         return output
