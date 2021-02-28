@@ -122,7 +122,7 @@
     </item>
     <item row="2" column="0">
      <widget class="QFrame" name="main_component">
-      <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,2">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,1">
        <item>
         <widget class="QGroupBox" name="mods_component">
          <property name="title">
@@ -180,7 +180,7 @@
              <bool>false</bool>
             </attribute>
             <attribute name="verticalHeaderCascadingSectionResizes">
-             <bool>false</bool>
+             <bool>true</bool>
             </attribute>
             <column>
              <property name="text">
