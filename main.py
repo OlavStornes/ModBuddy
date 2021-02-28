@@ -84,8 +84,7 @@ class Ui(QMainWindow):
             'profile': self.get_current_profile()
         }
         self.settings['lastactivity'] = last_activity
-        print("updated")
-        print(last_activity)
+        # print(last_activity)
         Path(SETTINGS_NAME).write_text(
             json.dumps(self.settings, indent=4))
 
@@ -127,7 +126,7 @@ class Ui(QMainWindow):
     def update_fileview(self):
         path = self.game_setting.get('game_root_folder')
         mod_path = self.game_setting.get('game_mod_folder')
-        print(f"updating path {path}")
+        # print(f"updating path {path}")
 
         self.fs_mod.setRootPath(path)
         self.file_view.setModel(self.fs_mod)

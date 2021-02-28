@@ -16,15 +16,13 @@ class ModPack():
     def handle_symlinking(self, file_path: Path):
         target_path = self.convert_from_input_to_output(file_path)
         if target_path.exists():
-            print("DELETE {}".format(target_path))
+            # print("DELETE {}".format(target_path))
             target_path.unlink()
-        print("{} --> {}".format(file_path.resolve(), target_path.resolve()))
+        # print("{} --> {}".format(file_path.resolve(), target_path.resolve()))
         file_path.link_to(target_path)
 
     def create_folder(self, folder_path: Path):
-        print(folder_path)
         output_path = self.convert_from_input_to_output(folder_path)
-        print("FOLDER AT {}".format(output_path.resolve()))
         output_path.mkdir(exist_ok=True)
 
     def add_mod(self):
