@@ -182,7 +182,7 @@ class Ui(QMainWindow):
         self.add_mod(Path(GAME_PRESET_FOLDER / self.game_setting.get('game_preset_folder')))
 
     def install_new_archived_mod(self):
-        archives = QFileDialog.getOpenFileNames(self, 'Select archives to be installed')
+        archives = QFileDialog.getOpenFileNames(self, 'Select archives to be installed', str(Path.home()))
         if not archives:
             return
         for archive in archives[0]:
@@ -223,6 +223,7 @@ class Ui(QMainWindow):
         self.mod_list.setItem(i, 0, QTableWidgetItem(row.get('name')))
         self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('path')))
         self.mod_list.setItem(i, 2, QTableWidgetItem(chkBoxItem))
+        self.mod_list.resizeColumnsToContents()
 
     def move_row_up(self):
         row = self.mod_list.currentRow()
@@ -269,7 +270,6 @@ everything inside this folder?\n{del_path_target}")
                 else:
                     subpath.unlink()
             QMessageBox.information(self, 'Done', 'Mods are cleaned!')
-            
 
     def letsgo_mydudes(self):
         conf = self.export_modlist_to_list(self.mod_list)
