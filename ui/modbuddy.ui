@@ -26,7 +26,7 @@
          <item>
           <widget class="QPushButton" name="new_mod_button">
            <property name="text">
-            <string>Import mod from external folder</string>
+            <string>Import mod from existing folder</string>
            </property>
           </widget>
          </item>
