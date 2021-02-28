@@ -277,9 +277,9 @@ everything inside this folder?\n{del_path_target}")
         x = QMessageBox.question(self, '', "are u sure")
         if x == QMessageBox.Yes:
             try:
-                modpack.initialize_configs(conf, INPUT_FOLDER, self.game_setting['game_mod_folder'])
-            except Exception:
-                QMessageBox.warning(self, '', 'Something went wrong')
+                modpack.initialize_configs(conf, INPUT_FOLDER, Path(self.game_setting['game_mod_folder']))
+            except Exception as e:
+                QMessageBox.warning(self, '', f'Something went wrong\n{e}')
             else:
                 QMessageBox.information(self, 'Done', 'Mods are loaded!')
 

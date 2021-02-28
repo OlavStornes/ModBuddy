@@ -9,7 +9,7 @@ class ModPack():
 
     def convert_from_input_to_output(self, in_path: Path):
         abs_input = str(in_path.resolve())
-        x = abs_input.replace(str(self.mod_root_folder.resolve()), '').lstrip('/')
+        x = abs_input.replace(str(self.mod_folder.resolve()), '').lstrip('/')
         output = self.out_p.joinpath(x)
         return output
 
