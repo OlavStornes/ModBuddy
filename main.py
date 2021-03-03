@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
