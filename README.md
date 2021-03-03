@@ -27,7 +27,7 @@ To further understand why this exists in the first place, I have some examples w
 
 This is one use case i find practical. Rather than merging all the patches i want, i can manage them through Mod buddy by importing each patch as a separate mod.
 
-![[Pasted image 20210303211214.png]]
+![WWHD example](docs/img/Screenshot_20210303_211124.png)
 
 - STALKER Anomaly
 Stalker anomaly has a big variety of addons/mods, and as a lot of the mods overlap with varying grade of compabillity. This workflow is easily manageable as well. Since not all addons have the same file structure ('ROOT/gamedata'), Mod buddy is developed to handle such cases as well.
