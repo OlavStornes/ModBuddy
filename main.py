@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from sys import argv
+from os import path as ospath
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -7,20 +9,19 @@ from PyQt5.uic import loadUi
 import shutil
 import modpack
 import json
-import sys
 
-INPUT_FOLDER = Path('input')
-SETTINGS_NAME = 'settings.json'
-ROOT_FOLDER_NAME = 'gamedata'
-OUTPUT_FOLDER = Path('output') / ROOT_FOLDER_NAME
-GAME_PRESET_FOLDER = Path('games')
+PROJECT_PATH = Path(ospath.dirname(argv[0])).resolve()
+INPUT_FOLDER = PROJECT_PATH / Path('input')
+SETTINGS_NAME = PROJECT_PATH / 'settings.json'
+GAME_PRESET_FOLDER = PROJECT_PATH / 'games'
 PRESET_FILE_NAME = 'game_setting.json'
+MAIN_UI_PATH = PROJECT_PATH / 'ui' / 'modbuddy.ui'
 
 
 class Ui(QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
-        loadUi('ui/modbuddy.ui', self)
+        loadUi(MAIN_UI_PATH, self)
 
         self.init_settings()
 
@@ -285,6 +286,6 @@ everything inside this folder?\n{del_path_target}")
 
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(argv)
     window = Ui()
     app.exec_()
