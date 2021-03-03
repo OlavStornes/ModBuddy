@@ -1,9 +1,5 @@
 # Mod buddy
 
-Mod buddy is a mod manager created with extensibillity in mind
-
-## Intro
-
 After attempting to mod Stalker Anomaly, i had issues finding good tools for the modding scene in Linux. Instead of merging a large amount of files like a caveman, I attempted to create a good enough tool for my use cases.
 
 ## Features
