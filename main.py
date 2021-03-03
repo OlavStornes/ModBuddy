@@ -125,9 +125,8 @@ class Ui(QMainWindow):
         self.update_last_activity()
 
     def update_fileview(self):
-        path = self.game_setting.get('game_root_folder')
         mod_path = self.game_setting.get('game_mod_folder')
-        # print(f"updating path {path}")
+        path = str(Path(mod_path).parent)
 
         self.fs_mod.setRootPath(path)
         self.file_view.setModel(self.fs_mod)
@@ -135,16 +134,13 @@ class Ui(QMainWindow):
         self.file_view.expand(self.fs_mod.index(mod_path))
 
     def create_new_game(self):
-        game_path = QFileDialog.getExistingDirectory(self, 'Get game folder')
-        if not game_path:
-            return
         game_mod_folder = QFileDialog.getExistingDirectory(
-            self, 'Get volatile mod folder', game_path
+            self, 'Get mod folder'
         )
         if not game_mod_folder:
             return
         game_preset_name, ok = QInputDialog.getText(
-            self, "", "Game preset name:", QLineEdit.Normal, Path(game_path).stem)
+            self, "", "Game preset name:", QLineEdit.Normal, Path(game_mod_folder).parent.stem)
         if ok:
             QMessageBox.information(self, 'Done', 'Game is set up and ready to go!')
 
@@ -153,7 +149,6 @@ class Ui(QMainWindow):
 
         preset = {
             'game_preset_folder': str(game_preset_folder.resolve()),
-            'game_root_folder': game_path,
             'game_mod_folder': game_mod_folder,
             'profiles': {
                 'default': {}
@@ -168,7 +163,7 @@ class Ui(QMainWindow):
     def load_game(self, target_preset):
         self.target_preset_folder = GAME_PRESET_FOLDER / target_preset
         self.game_setting = json.loads((self.target_preset_folder / PRESET_FILE_NAME).read_text())
-        self.mod_dest.setText(self.game_setting.get('game_root_folder'))
+        self.mod_dest.setText(self.game_setting.get('game_mod_folder'))
         self.update_profile_combobox()
         self.load_current_profile()
         self.update_fileview()
