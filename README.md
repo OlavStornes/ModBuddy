@@ -3,13 +3,14 @@
 Mod buddy is a mod manager created with extensibillity in mind
 
 ## Intro
-After attempting to mod Stalker Anomaly, i figured i missed a decent mod manager on Linux.
+
+After attempting to mod Stalker Anomaly, i had issues finding good tools for the modding scene in Linux. Instead of merging a large amount of files like a caveman, I attempted to create a good enough tool for my use cases.
 
 ## Features
 
 ![Showcase of modbuddy](docs/img/Screenshot_20210303_215430.png)
 
-- User-centric in where the content of a mod actually lies ([Explanation](#Usage))
+- Apply any mod, regardless of how the folder structure is.
 - Applied mods are hard linked, saving space
 - Support for an arbitrary amount of games
 - Mod presets
@@ -37,8 +38,8 @@ Stalker anomaly has a big variety of addons/mods, and as a lot of the mods overl
 
 ## Usage
 
-### Installation
-Requirements can be retrieved with `pip install -r requirements.txt`
+- Requirements can be retrieved with `pip install -r requirements.txt`
+- Run via `main.py` 
 
 ### Set up a game folder
 
@@ -61,4 +62,4 @@ You can add mods from two different ways:
 
 
 ## Disclaimer
-Before you want to try this out: I'm not a UX-designer, a QT-developer nor a cat. This is a personal project which i have found a practical use for. 
+Before you want to try this out: I'm not a UX-designer, a QT-developer nor a cat. This is a personal project which i have found a practical use for.
