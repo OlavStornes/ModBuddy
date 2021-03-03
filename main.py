@@ -103,11 +103,14 @@ class Ui(QMainWindow):
         for x in self.game_setting.get('profiles'):
             self.profile_combobox.addItem(x)
 
-    def save_mod_table_config(self):
-        preset_name, ok = QInputDialog.getText(
-            self, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
-        if not ok:
-            return
+    def save_mod_table_config(self, current_preset=False):
+        if current_preset:
+            preset_name = self.get_current_profile()
+        else:
+            preset_name, ok = QInputDialog.getText(
+                self, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
+            if not ok:
+                return
 
         config = self.export_modlist_to_list(self.mod_list)
         self.game_setting[preset_name] = config
@@ -272,6 +275,7 @@ everything inside this folder?\n{del_path_target}")
 
         x = QMessageBox.question(self, '', "are u sure")
         if x == QMessageBox.Yes:
+            self.save_mod_table_config(current_preset=True)
             try:
                 modpack.initialize_configs(conf, INPUT_FOLDER, Path(self.game_setting['game_mod_folder']))
             except Exception as e:
