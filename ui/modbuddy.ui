@@ -100,7 +100,7 @@
        <item>
         <widget class="QPushButton" name="clean_modfolder_button">
          <property name="text">
-          <string>CLEAN MODFOLDER</string>
+          <string>CLEAN UP MOD-FOLDER</string>
          </property>
         </widget>
        </item>
@@ -113,7 +113,7 @@
           </size>
          </property>
          <property name="text">
-          <string>LETS GO MAH DUDES</string>
+          <string>Execute current configuration</string>
          </property>
         </widget>
        </item>
