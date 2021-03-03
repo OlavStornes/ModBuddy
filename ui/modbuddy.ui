@@ -28,16 +28,16 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QPushButton" name="new_mod_button">
+           <widget class="QPushButton" name="new_mod_archived_button">
             <property name="text">
-             <string>Import mod from existing folder</string>
+             <string>Add mod from archive</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="new_mod_archived_button">
+           <widget class="QPushButton" name="new_mod_button">
             <property name="text">
-             <string>Get mod from archive</string>
+             <string>Add mod from folder</string>
             </property>
            </widget>
           </item>
