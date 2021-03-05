@@ -131,6 +131,8 @@ class Ui(QMainWindow):
 
     def update_fileview(self):
         mod_path = self.game_setting.get('game_mod_folder')
+        if not mod_path:
+            return
         path = str(Path(mod_path).parent)
 
         self.fs_mod.setRootPath(path)
