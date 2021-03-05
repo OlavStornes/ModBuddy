@@ -14,9 +14,29 @@ class ModModel(QtCore.QAbstractTableModel):
         return super().headerData(section, orientation, role)
 
     def data(self, index, role):
-        if role == Qt.DisplayRole:
-            text = self.mods[index.row()].get(self.headers[index.column()])
-            return text
+        value = self.mods[index.row()].get(self.headers[index.column()])
+        if role == QtCore.Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
+            if value:
+                return QtCore.QVariant(QtCore.Qt.Checked)
+            else:
+                return QtCore.QVariant(QtCore.Qt.Unchecked)
+        if role == QtCore.Qt.DisplayRole:
+            return value
+
+    def setData(self, index, value, role: int) -> bool:
+        if role == Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
+            if value == Qt.Checked:
+                self.mods[index.row()]['enabled'] = True
+            else:
+                self.mods[index.row()]['enabled'] = False
+        self.layoutChanged.emit()
+        return super().setData(index, value, role=role)
+
+    def flags(self, index):
+        if index.column() == 0:
+            return Qt.ItemIsEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsSelectable
+        else:
+            return super().flags(index)
 
     def rowCount(self, index=None) -> int:
         return len(self.mods)
