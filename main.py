@@ -63,6 +63,7 @@ class Ui(QMainWindow):
         return output
 
     def init_settings(self):
+        GAME_PRESET_FOLDER.mkdir(exist_ok=True)
         try:
             self.settings = json.loads(Path(SETTINGS_NAME).read_text())
         except (FileNotFoundError, json.JSONDecodeError):
