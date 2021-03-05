@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from sys import argv
 from os import path as ospath
+import models
 from pathlib import Path
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -228,33 +229,28 @@ class Ui(QMainWindow):
         self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('path')))
         self.mod_list.resizeColumnsToContents()
 
+    def get_mod_list_row(self):
+        return self.mod_list.selectionModel().selectedRows()[0].row()
+
     def move_row_up(self):
-        row = self.mod_list.currentRow()
-        column = self.mod_list.currentColumn()
-        if row > 0:
-            self.mod_list.insertRow(row - 1)
-            for i in range(self.mod_list.columnCount()):
-                self.mod_list.setItem(
-                    row - 1, i, self.mod_list.takeItem(row + 1, i))
-                self.mod_list.setCurrentCell(row - 1, column)
-            self.mod_list.removeRow(row + 1)
+        try:
+            row = self.get_mod_list_row()
+        except IndexError as e:
+            raise e
+        self.modmodel.move_target_row_up(row)
 
     def move_row_down(self):
-        row = self.mod_list.currentRow()
-        column = self.mod_list.currentColumn()
-        if row < self.mod_list.rowCount() - 1:
-            self.mod_list.insertRow(row + 2)
-            for i in range(self.mod_list.columnCount()):
-                self.mod_list.setItem(row + 2, i, self.mod_list.takeItem(row, i))
-                self.mod_list.setCurrentCell(row + 2, column)
-            self.mod_list.removeRow(row)
+        try:
+            row = self.get_mod_list_row()
+        except IndexError as e:
+            raise e
+        self.modmodel.move_target_row_down(row)
 
     def init_tablewidget(self):
-        self.mod_list.clearContents()
-        self.mod_list.setRowCount(0)
-        current_preset = self.game_setting.get(self.get_current_profile()) or []
-        for row in current_preset:
-            self.add_row_to_mods(row)
+        self.current_preset = self.game_setting.get(self.get_current_profile()) or []
+
+        self.modmodel = models.ModModel(mods=self.current_preset)
+        self.mod_list.setModel(self.modmodel)
 
     def clean_target_modfolder(self):
         target_modfolder = Path(self.game_setting.get('game_mod_folder'))
