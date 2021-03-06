@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt
 
 
 class ModModel(QtCore.QAbstractTableModel):
+    """An implementation for handling mod data in a QT.QTableView"""
     def __init__(self, *args, settings=None, profile=None, **kwargs):
         super(ModModel, self).__init__(*args, **kwargs)
         self.profile = profile
@@ -13,6 +14,7 @@ class ModModel(QtCore.QAbstractTableModel):
         self.parse_mods_from_settings()
 
     def parse_mods_from_settings(self):
+        """Read game_setting and update mod_order with the current profile"""
         if not self.game_setting:
             return
         try:
@@ -21,6 +23,11 @@ class ModModel(QtCore.QAbstractTableModel):
             pass
 
     def add_row(self, row: dict):
+        """Add a row to the table
+
+        :param row: A dictionary with the keys 'name' and 'enabled'
+        :type row: dict
+        """
         all_mods = self.game_setting.get('mods')
         self.mods.append({
             'enabled': row.get('enabled'),
@@ -29,6 +36,7 @@ class ModModel(QtCore.QAbstractTableModel):
         })
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int):
+        """Overridden function to support own headers"""
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return self.headers[section]
         return super().headerData(section, orientation, role)
@@ -59,6 +67,7 @@ class ModModel(QtCore.QAbstractTableModel):
         return super().setData(index, value, role=role)
 
     def flags(self, index):
+        """Overridden function to support checkboxes"""
         if index.column() == 0:
             return Qt.ItemIsEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsSelectable
         else:
@@ -85,8 +94,14 @@ class ModModel(QtCore.QAbstractTableModel):
         should_be_at = row + 1
         self._switch_rows(row, should_be_at)
 
-    def _switch_rows(self, old_index: dict, new_index: int):
+    def _switch_rows(self, old_index: int, new_index: int):
+        """Switch rows on two entries based on their index in mod_order.
+
+        :param old_index: Index of item chosen
+        :type old_index: int
+        :param new_index: index of target item
+        :type new_index: int
+        """
         extracted_row = self.mod_order.pop(old_index)
         self.mod_order.insert(new_index, extracted_row)
         self.layoutChanged.emit()
-

@@ -38,7 +38,7 @@ class Ui(QMainWindow):
         # - Game profiles
         self.load_profile_button.clicked.connect(self.load_current_profile)
         self.save_profile_button.clicked.connect(self.write_preset_to_config)
-        self.duplicate_profile_button.clicked.connect(self.save_mod_table_config)
+        self.duplicate_profile_button.clicked.connect(self.create_new_mod_table_config)
 
         # - Game
         self.new_game_button.clicked.connect(self.create_new_game)
@@ -52,6 +52,7 @@ class Ui(QMainWindow):
         self.show()
 
     def init_settings(self):
+        """ Initial setup for mod buddy"""
         GAME_PRESET_FOLDER.mkdir(exist_ok=True)
         try:
             self.settings = json.loads(Path(SETTINGS_NAME).read_text())
@@ -60,12 +61,15 @@ class Ui(QMainWindow):
         self.game_setting = {}
 
     def get_current_game(self) -> str:
+        """ Retrieve what game is currently active"""
         return self.game_combobox.currentText()
 
     def get_current_profile(self) -> str:
+        """ Retrieve what profile is currently active"""
         return self.profile_combobox.currentText()
 
     def update_game_combobox(self):
+        """Update information inside the game combobox"""
         self.game_combobox.clear()
         current_game = self.settings.get('lastactivity').get('game')
         index = None
@@ -77,6 +81,7 @@ class Ui(QMainWindow):
             self.game_combobox.setCurrentIndex(index)
 
     def update_profile_combobox(self):
+        """Update information inside the preset combobox"""
         self.profile_combobox.clear()
         current_game = self.settings.get('lastactivity').get('profile')
         index = None
@@ -88,6 +93,13 @@ class Ui(QMainWindow):
             self.profile_combobox.setCurrentIndex(index)
 
     def update_last_activity(self, game: str = "", profile: str = ""):
+        """Update the current last_activity and store it
+
+        :param game: Current game, defaults to ""
+        :type game: str, optional
+        :param profile: Current preset inside game, defaults to ""
+        :type profile: str, optional
+        """
         last_activity = {
             'game': game or self.get_current_game(),
             'profile': profile or self.get_current_profile()
@@ -98,6 +110,7 @@ class Ui(QMainWindow):
             json.dumps(self.settings, indent=4))
 
     def retrieve_last_activity(self):
+        """Update the UI with contents from lastactivity"""
         last = self.settings.get('lastactivity')
         if last:
             game = last.get('game')
@@ -105,7 +118,9 @@ class Ui(QMainWindow):
             self.load_game(game)
             self.load_profile(profile)
 
-    def save_mod_table_config(self):
+    def create_new_mod_table_config(self):
+        """Take the current mod setup presented,
+        create a new mod preset and save it to the settings"""
         preset_name, ok = QInputDialog.getText(
             self, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
         if not ok:
@@ -120,19 +135,27 @@ class Ui(QMainWindow):
         self.update_profile_combobox()
 
     def write_preset_to_config(self):
+        """Update the current mod setup to its respective profile"""
         Path(self.target_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(self.game_setting, indent=4))
 
     def load_profile(self, target_profile: str):
+        """Initialize a chosen preset to the mod table
+
+        :param target_profile: A profile that exists inside profiles in 'game_setting.json'
+        :type target_profile: str
+        """
         self.current_profile = self.game_setting.get('profiles').get(target_profile)
         self.init_tablewidget(target_profile)
 
     def load_current_profile(self):
+        """Initialize the current preset (Chosen in GUI)"""
         preset = self.get_current_profile()
         self.load_profile(preset)
         self.update_last_activity()
 
     def update_fileview(self):
+        """Update the file explorer with current game settings"""
         mod_path = self.game_setting.get('game_mod_folder')
         if not mod_path:
             return
@@ -144,6 +167,7 @@ class Ui(QMainWindow):
         self.file_view.expand(self.fs_mod.index(mod_path))
 
     def create_new_game(self):
+        """Start a wizard to create a new game"""
         game_mod_folder = QFileDialog.getExistingDirectory(
             self, 'Get mod folder'
         )
@@ -170,7 +194,12 @@ class Ui(QMainWindow):
         self.update_game_combobox()
         self.update_fileview()
 
-    def load_game(self, target_preset):
+    def load_game(self, target_preset: str):
+        """Load a new game and its presets
+
+        :param target_preset: Name of game (set when creating a new game)
+        :type target_preset: str
+        """
         self.target_preset_folder = GAME_PRESET_FOLDER / target_preset
         self.game_setting = json.loads((self.target_preset_folder / PRESET_FILE_NAME).read_text())
         self.mod_dest.setText(self.game_setting.get('game_mod_folder'))
@@ -179,14 +208,17 @@ class Ui(QMainWindow):
         self.update_fileview()
 
     def load_targeted_game(self):
+        """Load the game selected in GUI"""
         target_game = self.get_current_game()
         self.load_game(target_game)
         self.update_last_activity()
 
     def install_new_mod(self):
+        """Install a new mod already extracted somewhere"""
         self.add_mod(Path(GAME_PRESET_FOLDER / self.game_setting.get('game_preset_folder')))
 
     def install_new_archived_mod(self):
+        """Install a new mod from an archive"""
         archives = QFileDialog.getOpenFileNames(
             self, 'Select archives to be installed', str(Path.home()), "Supported archives (*.zip *.tar)")
         if not archives:
@@ -203,6 +235,11 @@ class Ui(QMainWindow):
                 self.add_mod(target_folder)
 
     def add_mod(self, folder_path: Path):
+        """Import a mod to the current game
+
+        :param folder_path: A path representing the 'root' of the mod folder
+        :type folder_path: Path
+        """
         folder = QFileDialog.getExistingDirectory(self, 'Choose subfolder', str(folder_path))
         if not folder:
             return
@@ -212,7 +249,14 @@ class Ui(QMainWindow):
         if ok:
             self.add_row_to_mods(name=text, path=folder)
 
-    def add_row_to_mods(self, name: str, path=Path):
+    def add_row_to_mods(self, name: str, path: Path):
+        """Add a given mod to the current game
+
+        :param name: unique name of the mod
+        :type name: str
+        :param path: A path representing the root of the folder, defaults to Path
+        :type path: Path, optional
+        """
         self.game_setting.get('mods')[name] = path
         for x in self.game_setting.get('profiles').values():
             x.append({
@@ -238,6 +282,11 @@ class Ui(QMainWindow):
         self.modmodel.move_target_row_down(row)
 
     def init_tablewidget(self, profile=""):
+        """Initialize the table with mods
+
+        :param profile: Profile name, defaults to ""
+        :type profile: str, optional
+        """
         if not profile:
             profile = self.get_current_profile()
         self.modmodel = models.ModModel(
@@ -263,6 +312,7 @@ everything inside this folder?\n{del_path_target}")
             QMessageBox.information(self, 'Done', 'Mods are cleaned!')
 
     def letsgo_mydudes(self):
+        """Commit the current setup and fire the modifications"""
         profile = self.game_setting.get('profiles').get(self.get_current_profile())
         mod_list = self.game_setting.get('mods')
 
