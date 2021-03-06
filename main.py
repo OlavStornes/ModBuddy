@@ -73,9 +73,19 @@ class Ui(QMainWindow):
             self.game_combobox.addItem(x.stem)
             if current_game == x.stem:
                 index = i
-
         if index:
             self.game_combobox.setCurrentIndex(index)
+
+    def update_profile_combobox(self):
+        self.profile_combobox.clear()
+        current_game = self.settings.get('lastactivity').get('profile')
+        index = None
+        for i, x in enumerate(self.game_setting.get('profiles')):
+            self.profile_combobox.addItem(x)
+            if current_game == x:
+                index = i
+        if index:
+            self.profile_combobox.setCurrentIndex(index)
 
     def update_last_activity(self):
         last_activity = {
@@ -88,24 +98,12 @@ class Ui(QMainWindow):
             json.dumps(self.settings, indent=4))
 
     def retrieve_last_activity(self):
-
         last = self.settings.get('lastactivity')
         if last:
             game = last.get('game')
             profile = last.get('profile')
             self.load_game(game)
             self.load_profile(profile)
-
-    def update_profile_combobox(self):
-        self.profile_combobox.clear()
-        current_game = self.settings.get('lastactivity').get('profile')
-        index = None
-        for i, x in enumerate(self.game_setting.get('profiles')):
-            self.profile_combobox.addItem(x)
-            if current_game == x:
-                index = i
-        if index:
-            self.profile_combobox.setCurrentIndex(index)
 
     def save_mod_table_config(self):
         preset_name, ok = QInputDialog.getText(
