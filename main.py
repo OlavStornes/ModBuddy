@@ -263,6 +263,7 @@ class Ui(QMainWindow):
                 'name': name,
                 'enabled': False
             })
+        self.modmodel.layoutChanged.emit()
 
     def get_mod_list_row(self):
         return self.mod_list.selectionModel().selectedRows()[0].row()
