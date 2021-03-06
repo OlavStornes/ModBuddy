@@ -87,10 +87,10 @@ class Ui(QMainWindow):
         if index:
             self.profile_combobox.setCurrentIndex(index)
 
-    def update_last_activity(self):
+    def update_last_activity(self, game: str = "", profile: str = ""):
         last_activity = {
-            'game': self.get_current_game(),
-            'profile': self.get_current_profile()
+            'game': game or self.get_current_game(),
+            'profile': profile or self.get_current_profile()
         }
         self.settings['lastactivity'] = last_activity
         # print(last_activity)
@@ -115,6 +115,9 @@ class Ui(QMainWindow):
         self.game_setting.get('profiles')[preset_name] = config
 
         self.write_preset_to_config()
+        self.update_last_activity(profile=preset_name)
+        self.load_profile(preset_name)
+        self.update_profile_combobox()
 
     def write_preset_to_config(self):
         Path(self.target_preset_folder / PRESET_FILE_NAME).write_text(
