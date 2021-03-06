@@ -90,14 +90,3 @@ class ModModel(QtCore.QAbstractTableModel):
         self.mod_order.insert(new_index, extracted_row)
         self.layoutChanged.emit()
 
-    def export_modlist_to_list(self) -> list:
-        raise NotImplementedError
-
-    def save_config(self) -> list:
-        output = []
-        for x in self.mods:
-            output.append({
-                'enabled': x.get('enabled'),
-                'name': x.get('name')
-            })
-        return output
