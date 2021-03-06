@@ -33,9 +33,9 @@ class ModPack():
             self.handle_symlinking(input_path)
 
 
-def initialize_configs(config_payload: dict, input_folder: Path, output_folder: Path):
-    for single_mod in config_payload:
+def initialize_configs(profile_payload: dict, mod_list: dict, input_folder: Path, output_folder: Path):
+    for single_mod in profile_payload:
         if single_mod.get('enabled'):
-            target_folder = input_folder / single_mod.get('path')
+            target_folder = input_folder / mod_list.get(single_mod.get('name'))
             x = ModPack(target_folder, output_folder)
             x.add_mod()

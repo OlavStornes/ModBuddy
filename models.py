@@ -49,11 +49,12 @@ class ModModel(QtCore.QAbstractTableModel):
                 return self.game_setting.get('mods').get(row.get('name'))
 
     def setData(self, index, value, role: int) -> bool:
+        cur_profile = self.game_setting.get('profiles').get(self.profile)
         if role == Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
             if value == Qt.Checked:
-                self.mods[index.row()]['enabled'] = True
+                cur_profile[index.row()]['enabled'] = True
             else:
-                self.mods[index.row()]['enabled'] = False
+                cur_profile[index.row()]['enabled'] = False
         self.layoutChanged.emit()
         return super().setData(index, value, role=role)
 

@@ -247,13 +247,15 @@ everything inside this folder?\n{del_path_target}")
             QMessageBox.information(self, 'Done', 'Mods are cleaned!')
 
     def letsgo_mydudes(self):
-        conf = self.modmodel.export_modlist_to_list(self.mod_list)
+        profile = self.game_setting.get('profiles').get(self.get_current_profile())
+        mod_list = self.game_setting.get('mods')
 
         x = QMessageBox.question(self, '', "are u sure")
         if x == QMessageBox.Yes:
             self.write_preset_to_config()
             try:
-                modpack.initialize_configs(conf, INPUT_FOLDER, Path(self.game_setting['game_mod_folder']))
+                modpack.initialize_configs(
+                    profile, mod_list, INPUT_FOLDER, Path(self.game_setting['game_mod_folder']))
             except Exception as e:
                 QMessageBox.warning(self, '', f'Something went wrong\n{e}')
             else:
