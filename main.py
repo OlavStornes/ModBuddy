@@ -67,8 +67,15 @@ class Ui(QMainWindow):
 
     def update_game_combobox(self):
         self.game_combobox.clear()
-        for x in GAME_PRESET_FOLDER.iterdir():
+        current_game = self.settings.get('lastactivity').get('game')
+        index = None
+        for i, x in enumerate(GAME_PRESET_FOLDER.iterdir()):
             self.game_combobox.addItem(x.stem)
+            if current_game == x.stem:
+                index = i
+
+        if index:
+            self.game_combobox.setCurrentIndex(index)
 
     def update_last_activity(self):
         last_activity = {
@@ -91,8 +98,14 @@ class Ui(QMainWindow):
 
     def update_profile_combobox(self):
         self.profile_combobox.clear()
-        for x in self.game_setting.get('profiles'):
+        current_game = self.settings.get('lastactivity').get('profile')
+        index = None
+        for i, x in enumerate(self.game_setting.get('profiles')):
             self.profile_combobox.addItem(x)
+            if current_game == x:
+                index = i
+        if index:
+            self.profile_combobox.setCurrentIndex(index)
 
     def save_mod_table_config(self):
         preset_name, ok = QInputDialog.getText(
@@ -111,7 +124,7 @@ class Ui(QMainWindow):
 
     def load_profile(self, target_profile: str):
         self.current_profile = self.game_setting.get('profiles').get(target_profile)
-        self.init_tablewidget()
+        self.init_tablewidget(target_profile)
 
     def load_current_profile(self):
         preset = self.get_current_profile()
@@ -223,9 +236,11 @@ class Ui(QMainWindow):
             pass
         self.modmodel.move_target_row_down(row)
 
-    def init_tablewidget(self):
+    def init_tablewidget(self, profile=""):
+        if not profile:
+            profile = self.get_current_profile()
         self.modmodel = models.ModModel(
-            settings=self.game_setting, profile=self.get_current_profile())
+            settings=self.game_setting, profile=profile)
         self.mod_list.setModel(self.modmodel)
 
     def clean_target_modfolder(self):
