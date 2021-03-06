@@ -3,9 +3,8 @@ from sys import argv
 from os import path as ospath
 import models
 from pathlib import Path
-from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QTableWidgetItem, QMainWindow, QFileSystemModel
+from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QMainWindow, QFileSystemModel
 from PyQt5.uic import loadUi
 import shutil
 import modpack
@@ -38,7 +37,8 @@ class Ui(QMainWindow):
 
         # - Game profiles
         self.load_profile_button.clicked.connect(self.load_current_profile)
-        self.save_profile_button.clicked.connect(self.save_mod_table_config)
+        self.save_profile_button.clicked.connect(self.write_preset_to_config)
+        self.duplicate_profile_button.clicked.connect(self.save_mod_table_config)
 
         # - Game
         self.new_game_button.clicked.connect(self.create_new_game)
@@ -50,18 +50,6 @@ class Ui(QMainWindow):
         self.retrieve_last_activity()
         self.update_fileview()
         self.show()
-
-    @staticmethod
-    def export_modlist_to_list(table) -> dict:
-        output = []
-        for i in range(table.rowCount()):
-            output.append({
-                'enabled': bool(table.item(i, 0).checkState()),
-                'name': table.item(i, 1).text(),
-                'path': table.item(i, 2).text()
-            })
-
-        return output
 
     def init_settings(self):
         GAME_PRESET_FOLDER.mkdir(exist_ok=True)
@@ -106,23 +94,23 @@ class Ui(QMainWindow):
         for x in self.game_setting.get('profiles'):
             self.profile_combobox.addItem(x)
 
-    def save_mod_table_config(self, current_preset=False):
-        if current_preset:
-            preset_name = self.get_current_profile()
-        else:
-            preset_name, ok = QInputDialog.getText(
-                self, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
-            if not ok:
-                return
+    def save_mod_table_config(self):
+        preset_name, ok = QInputDialog.getText(
+            self, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
+        if not ok:
+            return
 
-        config = self.export_modlist_to_list(self.mod_list)
-        self.game_setting[preset_name] = config
+        config = self.game_setting.get('profiles').get(self.get_current_profile())
+        self.game_setting.get('profiles')[preset_name] = config
 
+        self.write_preset_to_config()
+
+    def write_preset_to_config(self):
         Path(self.target_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(self.game_setting, indent=4))
 
     def load_profile(self, target_profile: str):
-        self.current_profile = self.game_setting.get(target_profile)
+        self.current_profile = self.game_setting.get('profiles').get(target_profile)
         self.init_tablewidget()
 
     def load_current_profile(self):
@@ -159,9 +147,9 @@ class Ui(QMainWindow):
             'game_preset_folder': str(game_preset_folder.resolve()),
             'game_mod_folder': game_mod_folder,
             'profiles': {
-                'default': {}
+                'default': []
             },
-            'mods': []
+            'mods': {}
         }
         Path(game_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(preset, indent=4))
@@ -208,26 +196,15 @@ class Ui(QMainWindow):
         text, ok = QInputDialog.getText(
             self, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
         if ok:
-            self.add_row_to_mods({
-                'name': text,
-                'path': folder,
+            self.add_row_to_mods(name=text, path=folder)
+
+    def add_row_to_mods(self, name: str, path=Path):
+        self.game_setting.get('mods')[name] = path
+        for x in self.game_setting.get('profiles').values():
+            x.append({
+                'name': name,
                 'enabled': False
             })
-
-    def add_row_to_mods(self, row: dict):
-        i = self.mod_list.rowCount()
-        self.mod_list.insertRow(i)
-        chkBoxItem = QTableWidgetItem()
-        chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-        is_enabled = row.get('enabled')
-        if is_enabled:
-            chkBoxItem.setCheckState(QtCore.Qt.Checked)
-        else:
-            chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
-        self.mod_list.setItem(i, 0, QTableWidgetItem(chkBoxItem))
-        self.mod_list.setItem(i, 1, QTableWidgetItem(row.get('name')))
-        self.mod_list.setItem(i, 2, QTableWidgetItem(row.get('path')))
-        self.mod_list.resizeColumnsToContents()
 
     def get_mod_list_row(self):
         return self.mod_list.selectionModel().selectedRows()[0].row()
@@ -235,21 +212,20 @@ class Ui(QMainWindow):
     def move_row_up(self):
         try:
             row = self.get_mod_list_row()
-        except IndexError as e:
-            raise e
+        except IndexError:
+            pass
         self.modmodel.move_target_row_up(row)
 
     def move_row_down(self):
         try:
             row = self.get_mod_list_row()
-        except IndexError as e:
-            raise e
+        except IndexError:
+            pass
         self.modmodel.move_target_row_down(row)
 
     def init_tablewidget(self):
-        self.current_preset = self.game_setting.get(self.get_current_profile()) or []
-
-        self.modmodel = models.ModModel(mods=self.current_preset)
+        self.modmodel = models.ModModel(
+            settings=self.game_setting, profile=self.get_current_profile())
         self.mod_list.setModel(self.modmodel)
 
     def clean_target_modfolder(self):
@@ -271,11 +247,11 @@ everything inside this folder?\n{del_path_target}")
             QMessageBox.information(self, 'Done', 'Mods are cleaned!')
 
     def letsgo_mydudes(self):
-        conf = self.export_modlist_to_list(self.mod_list)
+        conf = self.modmodel.export_modlist_to_list(self.mod_list)
 
         x = QMessageBox.question(self, '', "are u sure")
         if x == QMessageBox.Yes:
-            self.save_mod_table_config(current_preset=True)
+            self.write_preset_to_config()
             try:
                 modpack.initialize_configs(conf, INPUT_FOLDER, Path(self.game_setting['game_mod_folder']))
             except Exception as e:
