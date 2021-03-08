@@ -71,7 +71,7 @@ class Ui(QMainWindow):
     def update_game_combobox(self):
         """Update information inside the game combobox"""
         self.game_combobox.clear()
-        current_game = self.settings.get('lastactivity').get('game')
+        current_game = self.settings.get('lastactivity', {}).get('game')
         index = None
         for i, x in enumerate(GAME_PRESET_FOLDER.iterdir()):
             self.game_combobox.addItem(x.stem)
@@ -168,31 +168,55 @@ class Ui(QMainWindow):
 
     def create_new_game(self):
         """Start a wizard to create a new game"""
-        game_mod_folder = QFileDialog.getExistingDirectory(
+        game_mod_folder_str = QFileDialog.getExistingDirectory(
             self, 'Get mod folder'
         )
-        if not game_mod_folder:
+        if not game_mod_folder_str:
             return
+        game_mod_folder = Path(game_mod_folder_str)
         game_preset_name, ok = QInputDialog.getText(
-            self, "", "Game preset name:", QLineEdit.Normal, Path(game_mod_folder).parent.stem)
+            self, "", "Game preset name:", QLineEdit.Normal, game_mod_folder.parent.stem)
         if ok:
             QMessageBox.information(self, 'Done', 'Game is set up and ready to go!')
 
         game_preset_folder = GAME_PRESET_FOLDER / game_preset_name
         game_preset_folder.mkdir()
 
+        game_folder = game_mod_folder.parent
+        backup_mod_folder = game_folder / '.mods'
+        try:
+            backup_mod_folder.mkdir()
+        except FileExistsError:
+            raise
+
+        # Create a backup of the original files, will be used for modding
+        initial_mod_content_folder = backup_mod_folder / 'base_content'
+        initial_mod_content_folder.mkdir()
+
+        x = modpack.ModPack(
+            game_mod_folder, initial_mod_content_folder, case_sensitive=True)
+        x.add_mod()
+
+        BASE_CONTENT_NAME = 'Base content'
+
         preset = {
             'game_preset_folder': str(game_preset_folder.resolve()),
-            'game_mod_folder': game_mod_folder,
+            'game_mod_folder': str(game_mod_folder.resolve()),
             'profiles': {
-                'default': []
+                'default': [{
+                    "enabled": True,
+                    "name": BASE_CONTENT_NAME
+                }]
             },
-            'mods': {}
+            'mods': {
+                BASE_CONTENT_NAME: str(initial_mod_content_folder.resolve())
+            }
         }
         Path(game_preset_folder / PRESET_FILE_NAME).write_text(
             json.dumps(preset, indent=4))
+        self.update_last_activity(game_preset_name, 'default')
         self.update_game_combobox()
-        self.update_fileview()
+        self.load_game(game_preset_name)
 
     def load_game(self, target_preset: str):
         """Load a new game and its presets
