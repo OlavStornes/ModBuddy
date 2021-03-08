@@ -2,14 +2,17 @@ from pathlib import Path
 
 
 class ModPack():
-    def __init__(self, mod_folder: Path, destination_folder: Path):
+    def __init__(self, mod_folder: Path, destination_folder: Path, case_sensitive=False):
         self.modname = mod_folder.name
         self.mod_folder = mod_folder
         self.out_p = destination_folder
+        self.case_sensitive = case_sensitive
 
     def convert_from_input_to_output(self, in_path: Path):
         abs_input = str(in_path.resolve())
         x = abs_input.replace(str(self.mod_folder.resolve()), '').lstrip('/')
+        if not self.case_sensitive:
+            x = x.lower()
         output = self.out_p.joinpath(x)
         return output
 
