@@ -81,7 +81,7 @@ class Ui(QMainWindow):
         self.game_combobox.clear()
         current_game = self.settings.get('lastactivity', {}).get('game')
         index = None
-        for i, x in enumerate(GAME_PRESET_FOLDER.iterdir()):
+        for i, x in enumerate(GAME_PRESET_FOLDER.glob('*.json')):
             self.game_combobox.addItem(x.stem)
             if current_game == x.stem:
                 index = i
@@ -91,7 +91,7 @@ class Ui(QMainWindow):
     def update_profile_combobox(self):
         """Update information inside the preset combobox"""
         self.profile_combobox.clear()
-        current_game = self.settings.get('lastactivity').get('profile')
+        current_game = self.settings.get('lastactivity', {}).get('profile')
         index = None
         for i, x in enumerate(self.game_setting.get('profiles')):
             self.profile_combobox.addItem(x)
@@ -144,7 +144,7 @@ class Ui(QMainWindow):
 
     def write_preset_to_config(self):
         """Update the current mod setup to its respective profile"""
-        Path(self.target_preset_folder / PRESET_FILE_NAME).write_text(
+        Path(self.target_preset_path).write_text(
             json.dumps(self.game_setting, indent=4))
 
     def load_profile(self, target_profile: str):
@@ -187,9 +187,6 @@ class Ui(QMainWindow):
         if ok:
             QMessageBox.information(self, 'Done', 'Game is set up and ready to go!')
 
-        game_preset_folder = GAME_PRESET_FOLDER / game_preset_name
-        game_preset_folder.mkdir()
-
         game_folder = game_mod_folder.parent
         backup_mod_folder = game_folder / '.mods'
         try:
@@ -208,7 +205,6 @@ class Ui(QMainWindow):
         BASE_CONTENT_NAME = 'Base content'
 
         preset = {
-            'game_preset_folder': str(game_preset_folder.resolve()),
             'default_mod_folder': str(backup_mod_folder.resolve()),
             'game_mod_folder': str(game_mod_folder.resolve()),
             'profiles': {
@@ -221,7 +217,7 @@ class Ui(QMainWindow):
                 BASE_CONTENT_NAME: str(initial_mod_content_folder.resolve())
             }
         }
-        Path(game_preset_folder / PRESET_FILE_NAME).write_text(
+        Path(GAME_PRESET_FOLDER / f'{game_preset_name}.json').write_text(
             json.dumps(preset, indent=4))
         self.update_last_activity(game_preset_name, 'default')
         self.update_game_combobox()
@@ -233,8 +229,8 @@ class Ui(QMainWindow):
         :param target_preset: Name of game (set when creating a new game)
         :type target_preset: str
         """
-        self.target_preset_folder = GAME_PRESET_FOLDER / target_preset
-        self.game_setting = json.loads((self.target_preset_folder / PRESET_FILE_NAME).read_text())
+        self.target_preset_path = GAME_PRESET_FOLDER / f'{target_preset}.json'
+        self.game_setting = json.loads((self.target_preset_path).read_text())
         self.mod_dest.setText(self.game_setting.get('game_mod_folder'))
         self.update_profile_combobox()
         self.load_current_profile()
