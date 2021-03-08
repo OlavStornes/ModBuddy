@@ -209,6 +209,7 @@ class Ui(QMainWindow):
 
         preset = {
             'game_preset_folder': str(game_preset_folder.resolve()),
+            'default_mod_folder': str(backup_mod_folder.resolve()),
             'game_mod_folder': str(game_mod_folder.resolve()),
             'profiles': {
                 'default': [{
@@ -247,7 +248,7 @@ class Ui(QMainWindow):
 
     def install_new_mod(self):
         """Install a new mod already extracted somewhere"""
-        self.add_mod(Path(GAME_PRESET_FOLDER / self.game_setting.get('game_preset_folder')))
+        self.add_mod(Path(self.game_setting.get('default_mod_folder') or "."))
 
     def install_new_archived_mod(self):
         """Install a new mod from an archive"""
@@ -255,11 +256,16 @@ class Ui(QMainWindow):
             self, 'Select archives to be installed', str(Path.home()), "Supported archives (*.zip *.tar)")
         if not archives:
             return
+        default_mod_folder = self.game_setting.get('default_mod_folder')
+        if not default_mod_folder:
+            QMessageBox.warning(self, '', (
+                "Sorry, but your settings doesn't have ",
+                "a default destination for mods. Is it an old config?"))
         for archive in archives[0]:
             try:
                 suff = Path(archive).suffix
                 folder_name = Path(archive).stem
-                target_folder = (self.target_preset_folder / folder_name)
+                target_folder = Path(default_mod_folder) / folder_name
                 shutil.unpack_archive(archive, target_folder)
             except shutil.ReadError:
                 QMessageBox.warning(self, '', f'Sorry, but {suff}-archives is not supported')
