@@ -60,6 +60,14 @@ class Ui(QMainWindow):
             self.settings = {}
         self.game_setting = {}
 
+    @staticmethod
+    def recursive_rmdir(delpath: Path):
+        for subpath in sorted(delpath.glob('**/*'), reverse=True):
+            if subpath.is_dir():
+                subpath.rmdir()
+            else:
+                subpath.unlink()
+
     def get_current_game(self) -> str:
         """ Retrieve what game is currently active"""
         return self.game_combobox.currentText()
@@ -329,22 +337,27 @@ class Ui(QMainWindow):
 everything inside this folder?\n{del_path_target}")
 
         if x == QMessageBox.Yes:
-            for subpath in sorted(del_path_target.glob('**/*'), reverse=True):
-                if subpath.is_dir():
-                    subpath.rmdir()
-                else:
-                    subpath.unlink()
+            self.recursive_rmdir(del_path_target)
             QMessageBox.information(self, 'Done', 'Mods are cleaned!')
 
     def letsgo_mydudes(self):
         """Commit the current setup and fire the modifications"""
         profile = self.game_setting.get('profiles').get(self.get_current_profile())
         mod_list = self.game_setting.get('mods')
+        enabled_mods = ',\n'.join([x.get('name') for x in profile if x.get('enabled')])
+        target_mod_folder = Path(self.game_setting["game_mod_folder"])
 
-        x = QMessageBox.question(self, '', "are u sure")
+        x = QMessageBox.question(self, '', (
+            'This will delete all content inside:\n\n'
+            f'{target_mod_folder.resolve()}\n'
+            'and commit these mods afterwards:\n\n'
+            f'{enabled_mods}\n\n'
+            f'Are you sure about this?'
+        ))
         if x == QMessageBox.Yes:
             self.write_preset_to_config()
             try:
+                self.recursive_rmdir(target_mod_folder.resolve())
                 modpack.initialize_configs(
                     profile, mod_list, INPUT_FOLDER, Path(self.game_setting['game_mod_folder']))
             except Exception as e:
