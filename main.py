@@ -173,6 +173,12 @@ class Ui(QMainWindow):
         self.file_view.setModel(self.fs_mod)
         self.file_view.setRootIndex(self.fs_mod.index(path))
         self.file_view.expand(self.fs_mod.index(mod_path))
+        
+    def set_dirty_status(self, dirty: bool):
+        """Update functionality on buttons with regards to modified contents"""
+        self.is_dirty = dirty
+        self.initialize_mod.setEnabled(self.is_dirty)
+        self.save_profile_button.setEnabled(self.is_dirty)
 
     def create_new_game(self):
         """Start a wizard to create a new game"""
@@ -226,7 +232,7 @@ class Ui(QMainWindow):
     def load_game(self, target_preset: str):
         """Load a new game and its presets
 
-        :param target_preset: Name of game (set when creating a new game)
+        :Param target_preset: Name of game (set when creating a new game)
         :type target_preset: str
         """
         self.target_preset_path = GAME_PRESET_FOLDER / f'{target_preset}.json'
@@ -235,6 +241,7 @@ class Ui(QMainWindow):
         self.update_profile_combobox()
         self.load_current_profile()
         self.update_fileview()
+        self.set_dirty_status(False)
 
     def load_targeted_game(self):
         """Load the game selected in GUI"""
@@ -298,6 +305,7 @@ class Ui(QMainWindow):
                 'enabled': False
             })
         self.modmodel.layoutChanged.emit()
+        self.set_dirty_status(True)
 
     def get_mod_list_row(self):
         return self.mod_list.selectionModel().selectedRows()[0].row()
@@ -308,6 +316,7 @@ class Ui(QMainWindow):
         except IndexError:
             pass
         self.modmodel.move_target_row_up(row)
+        self.set_dirty_status(True)
 
     def move_row_down(self):
         try:
@@ -315,6 +324,7 @@ class Ui(QMainWindow):
         except IndexError:
             pass
         self.modmodel.move_target_row_down(row)
+        self.set_dirty_status(True)
 
     def init_tablewidget(self, profile=""):
         """Initialize the table with mods
@@ -366,6 +376,7 @@ everything inside this folder?\n{del_path_target}")
                 QMessageBox.warning(self, '', f'Something went wrong\n{e}')
             else:
                 QMessageBox.information(self, 'Done', 'Mods are loaded!')
+                self.set_dirty_status(False)
 
 
 if __name__ == "__main__":
