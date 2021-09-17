@@ -81,27 +81,3 @@ class ModModel(QtCore.QAbstractTableModel):
             return len(self.headers)
         except IndexError:
             return 0
-
-    def move_target_row_up(self, row: int):
-        if row == 0:
-            return
-        should_be_at = row - 1
-        self._switch_rows(row, should_be_at)
-
-    def move_target_row_down(self, row: int):
-        if row == self.rowCount():
-            return
-        should_be_at = row + 1
-        self._switch_rows(row, should_be_at)
-
-    def _switch_rows(self, old_index: int, new_index: int):
-        """Switch rows on two entries based on their index in mod_order.
-
-        :param old_index: Index of item chosen
-        :type old_index: int
-        :param new_index: index of target item
-        :type new_index: int
-        """
-        extracted_row = self.mod_order.pop(old_index)
-        self.mod_order.insert(new_index, extracted_row)
-        self.layoutChanged.emit()

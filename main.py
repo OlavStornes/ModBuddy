@@ -313,18 +313,22 @@ class Ui(QMainWindow):
     def move_row_up(self):
         try:
             row = self.get_mod_list_row()
+            game_profile = self.game_setting.get('profiles').get(self.get_current_profile())
+            game_profile[row], game_profile[row-1] = game_profile[row-1], game_profile[row]
+            self.modmodel.layoutChanged.emit()
+            self.set_dirty_status(True)
         except IndexError:
             pass
-        self.modmodel.move_target_row_up(row)
-        self.set_dirty_status(True)
 
     def move_row_down(self):
         try:
             row = self.get_mod_list_row()
+            game_profile = self.game_setting.get('profiles').get(self.get_current_profile())
+            game_profile[row], game_profile[row+1] = game_profile[row+1], game_profile[row]
+            self.modmodel.layoutChanged.emit()
+            self.set_dirty_status(True)
         except IndexError:
             pass
-        self.modmodel.move_target_row_down(row)
-        self.set_dirty_status(True)
 
     def init_tablewidget(self, profile=""):
         """Initialize the table with mods
