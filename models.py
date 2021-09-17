@@ -29,6 +29,7 @@ class ModModel(QtCore.QAbstractTableModel):
         return super().headerData(section, orientation, role)
 
     def data(self, index, role):
+        """Model-specific function to assist in displaying of data"""
         cur_profile = self.game_setting.get('profiles').get(self.profile)
 
         row = cur_profile[index.row()]
@@ -44,6 +45,7 @@ class ModModel(QtCore.QAbstractTableModel):
                 return self.game_setting.get('mods').get(row.get('name'))
 
     def setData(self, index, value, role: int) -> bool:
+        """Overridden funciton to help with checkboxes"""
         cur_profile = self.game_setting.get('profiles').get(self.profile)
         if role == Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
             if value == Qt.Checked:
