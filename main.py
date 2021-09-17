@@ -311,24 +311,23 @@ class Ui(QMainWindow):
         return self.mod_list.selectionModel().selectedRows()[0].row()
 
     def move_row_up(self):
-        try:
-            row = self.get_mod_list_row()
-            game_profile = self.game_setting.get('profiles').get(self.get_current_profile())
-            game_profile[row], game_profile[row-1] = game_profile[row-1], game_profile[row]
-            self.modmodel.layoutChanged.emit()
-            self.set_dirty_status(True)
-        except IndexError:
-            pass
+        row = self.get_mod_list_row()
+        if row > 0:
+            self._move_row(row, row-1)
 
     def move_row_down(self):
+        row = self.get_mod_list_row()
         try:
-            row = self.get_mod_list_row()
-            game_profile = self.game_setting.get('profiles').get(self.get_current_profile())
-            game_profile[row], game_profile[row+1] = game_profile[row+1], game_profile[row]
-            self.modmodel.layoutChanged.emit()
-            self.set_dirty_status(True)
+            self._move_row(row, row+1)
         except IndexError:
             pass
+        
+    def _move_row(self, index_a: int, index_b: int):
+        """Switch an entry between two rows in the mod list"""
+        game_profile = self.game_setting.get('profiles').get(self.get_current_profile())
+        game_profile[index_a], game_profile[index_b] = game_profile[index_b], game_profile[index_a]
+        self.modmodel.layoutChanged.emit()
+        self.set_dirty_status(True)
 
     def init_tablewidget(self, profile=""):
         """Initialize the table with mods
