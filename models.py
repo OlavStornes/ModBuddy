@@ -22,19 +22,6 @@ class ModModel(QtCore.QAbstractTableModel):
         except AttributeError:
             pass
 
-    def add_row(self, row: dict):
-        """Add a row to the table
-
-        :param row: A dictionary with the keys 'name' and 'enabled'
-        :type row: dict
-        """
-        all_mods = self.game_setting.get('mods')
-        self.mods.append({
-            'enabled': row.get('enabled'),
-            'name': row.get('name'),
-            'path': all_mods.get(row.get('name'))
-        })
-
     def headerData(self, section: int, orientation: Qt.Orientation, role: int):
         """Overridden function to support own headers"""
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
