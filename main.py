@@ -281,7 +281,9 @@ class Ui(QMainWindow):
         :param folder_path: A path representing the 'root' of the mod folder
         :type folder_path: Path
         """
-        folder = QFileDialog.getExistingDirectory(self, 'Choose subfolder', str(folder_path))
+        print(folder_path)
+        folder = QFileDialog.getExistingDirectory(self, 'Choose subfolder', str(folder_path),
+                                                  options=QFileDialog.DontUseNativeDialog)
         if not folder:
             return
         folder_name = Path(folder_path).stem
