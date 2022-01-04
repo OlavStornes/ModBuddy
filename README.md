@@ -33,6 +33,12 @@ This is one use case i find practical. Rather than merging all the patches i wan
 
 Stalker anomaly has a big variety of addons/mods, and as a lot of the mods overlap with varying grade of compabillity. This workflow is easily manageable as well. Since not all addons have the same file structure ('ROOT/gamedata'), Mod buddy is developed to handle such cases as well.
 
+## Explanation
+
+Modbuddy is leveraging the usage of hard links to both avoid duplicated data and avoid any suprises in regards to the filesystem. This is the main functionality residing in [modpack.py](https://github.com/OlavStornes/ModBuddy/blob/master/modpack.py)
+
+![Flow example](docs/img/modbuddy_flow.jpeg)
+
 ## Usage
 
 - Requirements can be retrieved with `pip install -r requirements.txt`
