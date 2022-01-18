@@ -28,6 +28,17 @@ class ModModel(QtCore.QAbstractTableModel):
             return self.headers[section]
         return super().headerData(section, orientation, role)
 
+
+    def parse_path(self, row: str):
+        """Attempt to strip away the unneccecary parts of a path for display"""
+        relative_path = self.game_setting.get('mods').get(row.get('name'))
+        try:
+            path_parsed = relative_path.replace(self.game_setting.get('default_mod_folder'), '.')
+        except:
+            return relative_path
+        return path_parsed
+
+
     def data(self, index, role):
         """Model-specific function to assist in displaying of data"""
         cur_profile = self.game_setting.get('profiles').get(self.profile)
@@ -42,7 +53,7 @@ class ModModel(QtCore.QAbstractTableModel):
             if self.headers[index.column()] == 'name':
                 return row.get('name')
             if self.headers[index.column()] == 'path':
-                return self.game_setting.get('mods').get(row.get('name'))
+                return self.parse_path(row)
 
     def setData(self, index, value, role: int) -> bool:
         """Overridden funciton to help with checkboxes"""
