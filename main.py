@@ -17,6 +17,10 @@ GAME_PRESET_FOLDER = PROJECT_PATH / 'games'
 PRESET_FILE_NAME = 'game_setting.json'
 MAIN_UI_PATH = PROJECT_PATH / 'ui' / 'modbuddy.ui'
 
+ENABLED_COLUMN = 0
+MODNAME_COLUMN = 1
+PATH_COLUMN = 2
+
 
 class Ui(QMainWindow):
     def __init__(self):
@@ -342,6 +346,7 @@ class Ui(QMainWindow):
         self.modmodel = models.ModModel(
             settings=self.game_setting, profile=profile)
         self.mod_list.setModel(self.modmodel)
+        self.mod_list.resizeColumnToContents(MODNAME_COLUMN)
 
     def clean_target_modfolder(self):
         target_modfolder = Path(self.game_setting.get('game_mod_folder'))
