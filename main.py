@@ -97,7 +97,7 @@ class Modbuddy():
         self.ui.profile_combobox.clear()
         current_game = self.settings.get('lastactivity', {}).get('profile')
         index = None
-        for i, x in enumerate(self.game_setting.get('profiles')):
+        for i, x in enumerate(self.game_setting['profiles']):
             self.ui.profile_combobox.addItem(x)
             if current_game == x:
                 index = i
@@ -138,8 +138,8 @@ class Modbuddy():
         if not ok:
             return
 
-        config = self.game_setting.get('profiles').get(self.get_current_profile())
-        self.game_setting.get('profiles')[preset_name] = config
+        config = self.game_setting['profiles'].get(self.get_current_profile())
+        self.game_setting['profiles'][preset_name] = config
 
         self.write_preset_to_config()
         self.update_last_activity(profile=preset_name)
@@ -157,7 +157,7 @@ class Modbuddy():
         :param target_profile: A profile that exists inside profiles in 'game_setting.json'
         :type target_profile: str
         """
-        self.current_profile = self.game_setting.get('profiles').get(target_profile)
+        self.current_profile = self.game_setting['profiles'].get(target_profile)
         self.init_tablewidget(target_profile)
 
     def load_current_profile(self):
@@ -241,6 +241,8 @@ class Modbuddy():
         """
         self.target_preset_path = GAME_PRESET_FOLDER / f'{target_preset}.json'
         self.game_setting = json.loads((self.target_preset_path).read_text())
+        assert type(self.game_setting) is dict
+
         self.ui.mod_dest.setText(self.game_setting.get('game_mod_folder'))
         self.update_profile_combobox()
         self.load_current_profile()
@@ -268,6 +270,8 @@ class Modbuddy():
             QMessageBox.warning(self.ui, '', (
                 "Sorry, but your settings doesn't have ",
                 "a default destination for mods. Is it an old config?"))
+
+        assert type(default_mod_folder) is str
         for archive in archives[0]:
             suff = Path(archive).suffix
             try:
@@ -304,8 +308,8 @@ class Modbuddy():
         :param path: A path representing the root of the folder, defaults to Path
         :type path: Path, optional
         """
-        self.game_setting.get('mods')[name] = path
-        for x in self.game_setting.get('profiles').values():
+        self.game_setting['mods'][name] = path
+        for x in self.game_setting['profiles'].values():
             x.append({
                 'name': name,
                 'enabled': False
@@ -330,7 +334,7 @@ class Modbuddy():
         
     def _move_row(self, index_a: int, index_b: int):
         """Switch an entry between two rows in the mod list"""
-        game_profile = self.game_setting.get('profiles').get(self.get_current_profile())
+        game_profile = self.game_setting['profiles'].get(self.get_current_profile())
         game_profile[index_a], game_profile[index_b] = game_profile[index_b], game_profile[index_a]
         self.modmodel.layoutChanged.emit()
         self.set_dirty_status(True)
@@ -349,7 +353,7 @@ class Modbuddy():
         self.ui.mod_list.resizeColumnToContents(MODNAME_COLUMN)
 
     def clean_target_modfolder(self):
-        target_modfolder = Path(self.game_setting.get('game_mod_folder'))
+        target_modfolder = Path(self.game_setting['game_mod_folder'])
         if not target_modfolder:
             QMessageBox.warning(self.ui, '', 'No target modfolder found')
         else:
@@ -358,17 +362,17 @@ class Modbuddy():
                 self, 'DELETING FOLDER', f"Are you sure you want to delete \
 everything inside this folder?\n{del_path_target}")
 
-        if x == QMessageBox.Yes:
-            self.recursive_rmdir(del_path_target)
-            QMessageBox.information(self.ui, 'Done', 'Mods are cleaned!')
+            if x == QMessageBox.Yes:
+                self.recursive_rmdir(del_path_target)
+                QMessageBox.information(self.ui, 'Done', 'Mods are cleaned!')
 
     def letsgo_mydudes(self):
         """Commit the current setup and fire the modifications"""
-        profile = self.game_setting.get('profiles').get(self.get_current_profile())
-        mod_list = self.game_setting.get('mods')
+        profile = self.game_setting['profiles'].get(self.get_current_profile())
+        mod_list = self.game_setting['mods']
         enabled_mods = ',\n'.join([x.get('name') for x in profile if x.get('enabled')])
         target_mod_folder = Path(self.game_setting["game_mod_folder"])
-
+        
         x = QMessageBox.question(self.ui, '', (
             'This will delete all content inside:\n\n'
             f'{target_mod_folder.resolve()}\n'

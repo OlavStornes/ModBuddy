@@ -1,11 +1,11 @@
+from typing import Any, Dict, List
 from PySide6 import QtCore
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAccessible
 
 
 class ModModel(QtCore.QAbstractTableModel):
     """An implementation for handling mod data in a QT.QTableView"""
-    def __init__(self, *args, settings=None, profile=None, **kwargs):
+    def __init__(self, *args: tuple[str], settings:Dict[str, Dict|str], profile: Any, **kwargs):
         super(ModModel, self).__init__(*args, **kwargs)
         self.profile = profile
         self.game_setting = settings
@@ -19,7 +19,10 @@ class ModModel(QtCore.QAbstractTableModel):
         if not self.game_setting:
             return
         try:
-            self.mod_order = self.game_setting.get('profiles').get(self.profile)
+            profile = self.game_setting['profiles']
+            assert type(profile) is dict
+
+            self.mod_order = profile.get(self.profile)
         except AttributeError:
             pass
 
@@ -30,9 +33,13 @@ class ModModel(QtCore.QAbstractTableModel):
         return super().headerData(section, orientation, role)
 
 
-    def parse_path(self, row: str):
+    def parse_path(self, row: Dict):
         """Attempt to strip away the unneccecary parts of a path for display"""
-        relative_path = self.game_setting.get('mods').get(row.get('name'))
+        mod_settings = self.game_setting['mods']
+        assert type(mod_settings) is dict
+
+        relative_path = mod_settings.get(row.get('name'))
+        assert type(relative_path) is str
         try:
             path_parsed = relative_path.replace(self.game_setting.get('default_mod_folder'), '.')
         except:
@@ -40,11 +47,13 @@ class ModModel(QtCore.QAbstractTableModel):
         return path_parsed
 
 
-    def data(self, index, role):
+    def data(self, index: QtCore.QModelIndex, role: int):
         """Model-specific function to assist in displaying of data"""
-        cur_profile = self.game_setting.get('profiles').get(self.profile)
+        cur_profile = self.game_setting['profiles'][self.profile]
 
         row = cur_profile[index.row()]
+        assert type(row) is dict
+
         if role == QtCore.Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
             if row.get('enabled'):
                 return Qt.Checked
@@ -56,9 +65,10 @@ class ModModel(QtCore.QAbstractTableModel):
             if self.headers[index.column()] == 'path':
                 return self.parse_path(row)
 
-    def setData(self, index, value, role: int) -> bool:
+    def setData(self, index: QtCore.QModelIndex, value, role: int) -> bool:
         """Overridden funciton to help with checkboxes"""
-        cur_profile = self.game_setting.get('profiles').get(self.profile)
+        cur_profile = self.game_setting['profiles'][self.profile]
+        assert type(cur_profile) is list
         if role == Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
             if value == Qt.Checked:
                 cur_profile[index.row()]['enabled'] = True
@@ -67,7 +77,7 @@ class ModModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
         return super().setData(index, value, role=role)
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex):
         """Overridden function to support checkboxes"""
         if index.column() == 0:
             return Qt.ItemIsEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsSelectable
@@ -75,6 +85,7 @@ class ModModel(QtCore.QAbstractTableModel):
             return super().flags(index)
 
     def rowCount(self, index=None) -> int:
+        assert type(self.mod_order) is list
         return len(self.mod_order)
 
     def columnCount(self, index=None) -> int:
