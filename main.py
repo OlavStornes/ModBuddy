@@ -3,9 +3,9 @@ import sys
 from os import path as ospath
 import models
 from pathlib import Path
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QMainWindow, QFileSystemModel
-from PyQt5.uic import loadUi
+from PySide6.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QMainWindow, QFileSystemModel, QApplication
+from PySide6.QtCore import QFile, QIODevice
+from PySide6.QtUiTools import QUiLoader
 import shutil
 import modpack
 import json

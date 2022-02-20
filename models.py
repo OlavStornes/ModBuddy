@@ -1,5 +1,6 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
+from PySide6 import QtCore
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QAccessible
 
 
 class ModModel(QtCore.QAbstractTableModel):
@@ -46,9 +47,9 @@ class ModModel(QtCore.QAbstractTableModel):
         row = cur_profile[index.row()]
         if role == QtCore.Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
             if row.get('enabled'):
-                return QtCore.QVariant(QtCore.Qt.Checked)
+                return Qt.Checked
             else:
-                return QtCore.QVariant(QtCore.Qt.Unchecked)
+                return Qt.Unchecked
         if role == QtCore.Qt.DisplayRole:
             if self.headers[index.column()] == 'name':
                 return row.get('name')
