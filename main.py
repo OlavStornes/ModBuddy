@@ -4,7 +4,7 @@ from os import path as ospath
 import models
 from pathlib import Path
 from PySide6.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QMainWindow, QFileSystemModel, QApplication
-from PySide6.QtCore import QFile, QIODevice
+from PySide6.QtCore import QFile, QIODevice, QCoreApplication, Qt
 from PySide6.QtUiTools import QUiLoader
 import shutil
 import modpack
@@ -390,6 +390,7 @@ everything inside this folder?\n{del_path_target}")
 
 
 if __name__ == "__main__":
+    QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
 
     ui_file_name = MAIN_UI_PATH
