@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>Mod buddy</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">color: rgb(255, 255, 255);
+background-color: rgb(61, 61, 62);
+alternate-background-color: rgb(42, 44, 45);</string>
+  </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>
   </property>
