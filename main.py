@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from sys import argv
+import sys
 from os import path as ospath
 import models
 from pathlib import Path
@@ -10,7 +10,7 @@ import shutil
 import modpack
 import json
 
-PROJECT_PATH = Path(ospath.dirname(argv[0])).resolve()
+PROJECT_PATH = Path(ospath.dirname(sys.argv[0])).resolve()
 INPUT_FOLDER = PROJECT_PATH / Path('input')
 SETTINGS_NAME = PROJECT_PATH / 'settings.json'
 GAME_PRESET_FOLDER = PROJECT_PATH / 'games'
@@ -22,10 +22,10 @@ MODNAME_COLUMN = 1
 PATH_COLUMN = 2
 
 
-class Ui(QMainWindow):
-    def __init__(self):
-        super(Ui, self).__init__()
-        loadUi(MAIN_UI_PATH, self)
+class Modbuddy():
+    def __init__(self, ui: QMainWindow):
+
+        self.ui = ui
 
         self.init_settings()
 
@@ -33,27 +33,27 @@ class Ui(QMainWindow):
         self.fs_mod = QFileSystemModel()
 
         # Connect buttons
-        self.move_up.clicked.connect(self.move_row_up)
-        self.move_down.clicked.connect(self.move_row_down)
-        self.new_mod_button.clicked.connect(self.install_new_mod)
-        self.new_mod_archived_button.clicked.connect(self.install_new_archived_mod)
-        self.clean_modfolder_button.clicked.connect(self.clean_target_modfolder)
+        self.ui.move_up.clicked.connect(self.move_row_up)
+        self.ui.move_down.clicked.connect(self.move_row_down)
+        self.ui.new_mod_button.clicked.connect(self.install_new_mod)
+        self.ui.new_mod_archived_button.clicked.connect(self.install_new_archived_mod)
+        self.ui.clean_modfolder_button.clicked.connect(self.clean_target_modfolder)
 
         # - Game profiles
-        self.load_profile_button.clicked.connect(self.load_current_profile)
-        self.save_profile_button.clicked.connect(self.write_preset_to_config)
-        self.duplicate_profile_button.clicked.connect(self.create_new_mod_table_config)
+        self.ui.load_profile_button.clicked.connect(self.load_current_profile)
+        self.ui.save_profile_button.clicked.connect(self.write_preset_to_config)
+        self.ui.duplicate_profile_button.clicked.connect(self.create_new_mod_table_config)
 
         # - Game
-        self.new_game_button.clicked.connect(self.create_new_game)
-        self.load_game_button.clicked.connect(self.load_targeted_game)
-        self.initialize_mod.clicked.connect(self.letsgo_mydudes)
+        self.ui.new_game_button.clicked.connect(self.create_new_game)
+        self.ui.load_game_button.clicked.connect(self.load_targeted_game)
+        self.ui.initialize_mod.clicked.connect(self.letsgo_mydudes)
 
         self.update_game_combobox()
         self.init_tablewidget()
         self.retrieve_last_activity()
         self.update_fileview()
-        self.show()
+
 
     def init_settings(self):
         """ Initial setup for mod buddy"""
@@ -74,35 +74,35 @@ class Ui(QMainWindow):
 
     def get_current_game(self) -> str:
         """ Retrieve what game is currently active"""
-        return self.game_combobox.currentText()
+        return self.ui.game_combobox.currentText()
 
     def get_current_profile(self) -> str:
         """ Retrieve what profile is currently active"""
-        return self.profile_combobox.currentText()
+        return self.ui.profile_combobox.currentText()
 
     def update_game_combobox(self):
         """Update information inside the game combobox"""
-        self.game_combobox.clear()
+        self.ui.game_combobox.clear()
         current_game = self.settings.get('lastactivity', {}).get('game')
         index = None
         for i, x in enumerate(GAME_PRESET_FOLDER.glob('*.json')):
-            self.game_combobox.addItem(x.stem)
+            self.ui.game_combobox.addItem(x.stem)
             if current_game == x.stem:
                 index = i
         if index:
-            self.game_combobox.setCurrentIndex(index)
+            self.ui.game_combobox.setCurrentIndex(index)
 
     def update_profile_combobox(self):
         """Update information inside the preset combobox"""
-        self.profile_combobox.clear()
+        self.ui.profile_combobox.clear()
         current_game = self.settings.get('lastactivity', {}).get('profile')
         index = None
         for i, x in enumerate(self.game_setting.get('profiles')):
-            self.profile_combobox.addItem(x)
+            self.ui.profile_combobox.addItem(x)
             if current_game == x:
                 index = i
         if index:
-            self.profile_combobox.setCurrentIndex(index)
+            self.ui.profile_combobox.setCurrentIndex(index)
 
     def update_last_activity(self, game: str = "", profile: str = ""):
         """Update the current last_activity and store it
@@ -174,28 +174,28 @@ class Ui(QMainWindow):
         path = str(Path(mod_path).parent)
 
         self.fs_mod.setRootPath(path)
-        self.file_view.setModel(self.fs_mod)
-        self.file_view.setRootIndex(self.fs_mod.index(path))
-        self.file_view.expand(self.fs_mod.index(mod_path))
+        self.ui.file_view.setModel(self.fs_mod)
+        self.ui.file_view.setRootIndex(self.fs_mod.index(path))
+        self.ui.file_view.expand(self.fs_mod.index(mod_path))
         
     def set_dirty_status(self, dirty: bool):
         """Update functionality on buttons with regards to modified contents"""
         self.is_dirty = dirty
-        self.initialize_mod.setEnabled(self.is_dirty)
-        self.save_profile_button.setEnabled(self.is_dirty)
+        self.ui.initialize_mod.setEnabled(self.is_dirty)
+        self.ui.save_profile_button.setEnabled(self.is_dirty)
 
     def create_new_game(self):
         """Start a wizard to create a new game"""
         game_mod_folder_str = QFileDialog.getExistingDirectory(
-            self, 'Get mod folder'
+            self.ui, 'Get mod folder'
         )
         if not game_mod_folder_str:
             return
         game_mod_folder = Path(game_mod_folder_str)
         game_preset_name, ok = QInputDialog.getText(
-            self, "", "Game preset name:", QLineEdit.Normal, game_mod_folder.parent.stem)
+            self.ui, "", "Game preset name:", QLineEdit.Normal, game_mod_folder.parent.stem)
         if ok:
-            QMessageBox.information(self, 'Done', 'Game is set up and ready to go!')
+            QMessageBox.information(self.ui, 'Done', 'Game is set up and ready to go!')
 
         game_folder = game_mod_folder.parent
         backup_mod_folder = game_folder / '.mods'
@@ -241,7 +241,7 @@ class Ui(QMainWindow):
         """
         self.target_preset_path = GAME_PRESET_FOLDER / f'{target_preset}.json'
         self.game_setting = json.loads((self.target_preset_path).read_text())
-        self.mod_dest.setText(self.game_setting.get('game_mod_folder'))
+        self.ui.mod_dest.setText(self.game_setting.get('game_mod_folder'))
         self.update_profile_combobox()
         self.load_current_profile()
         self.update_fileview()
@@ -260,22 +260,22 @@ class Ui(QMainWindow):
     def install_new_archived_mod(self):
         """Install a new mod from an archive"""
         archives = QFileDialog.getOpenFileNames(
-            self, 'Select archives to be installed', str(Path.home()), "Supported archives (*.zip *.tar)")
+            self.ui, 'Select archives to be installed', str(Path.home()), "Supported archives (*.zip *.tar)")
         if not archives:
             return
         default_mod_folder = self.game_setting.get('default_mod_folder')
         if not default_mod_folder:
-            QMessageBox.warning(self, '', (
+            QMessageBox.warning(self.ui, '', (
                 "Sorry, but your settings doesn't have ",
                 "a default destination for mods. Is it an old config?"))
         for archive in archives[0]:
+            suff = Path(archive).suffix
             try:
-                suff = Path(archive).suffix
                 folder_name = Path(archive).stem
                 target_folder = Path(default_mod_folder) / folder_name
                 shutil.unpack_archive(archive, target_folder)
             except shutil.ReadError:
-                QMessageBox.warning(self, '', f'Sorry, but {suff}-archives is not supported')
+                QMessageBox.warning(self.ui, '', f'Sorry, but {suff}-archives is not supported')
             else:
                 self.add_mod(target_folder)
 
@@ -286,13 +286,13 @@ class Ui(QMainWindow):
         :type folder_path: Path
         """
         print(folder_path)
-        folder = QFileDialog.getExistingDirectory(self, 'Choose subfolder', str(folder_path),
+        folder = QFileDialog.getExistingDirectory(self.ui, 'Choose subfolder', str(folder_path),
                                                   options=QFileDialog.DontUseNativeDialog)
         if not folder:
             return
         folder_name = Path(folder_path).stem
         text, ok = QInputDialog.getText(
-            self, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
+            self.ui, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
         if ok:
             self.add_row_to_mods(name=text, path=folder)
 
@@ -314,7 +314,7 @@ class Ui(QMainWindow):
         self.set_dirty_status(True)
 
     def get_mod_list_row(self):
-        return self.mod_list.selectionModel().selectedRows()[0].row()
+        return self.ui.mod_list.selectionModel().selectedRows()[0].row()
 
     def move_row_up(self):
         row = self.get_mod_list_row()
@@ -345,13 +345,13 @@ class Ui(QMainWindow):
             profile = self.get_current_profile()
         self.modmodel = models.ModModel(
             settings=self.game_setting, profile=profile)
-        self.mod_list.setModel(self.modmodel)
-        self.mod_list.resizeColumnToContents(MODNAME_COLUMN)
+        self.ui.mod_list.setModel(self.modmodel)
+        self.ui.mod_list.resizeColumnToContents(MODNAME_COLUMN)
 
     def clean_target_modfolder(self):
         target_modfolder = Path(self.game_setting.get('game_mod_folder'))
         if not target_modfolder:
-            QMessageBox.warning(self, '', 'No target modfolder found')
+            QMessageBox.warning(self.ui, '', 'No target modfolder found')
         else:
             del_path_target = target_modfolder.resolve()
             x = QMessageBox.question(
@@ -360,7 +360,7 @@ everything inside this folder?\n{del_path_target}")
 
         if x == QMessageBox.Yes:
             self.recursive_rmdir(del_path_target)
-            QMessageBox.information(self, 'Done', 'Mods are cleaned!')
+            QMessageBox.information(self.ui, 'Done', 'Mods are cleaned!')
 
     def letsgo_mydudes(self):
         """Commit the current setup and fire the modifications"""
@@ -369,7 +369,7 @@ everything inside this folder?\n{del_path_target}")
         enabled_mods = ',\n'.join([x.get('name') for x in profile if x.get('enabled')])
         target_mod_folder = Path(self.game_setting["game_mod_folder"])
 
-        x = QMessageBox.question(self, '', (
+        x = QMessageBox.question(self.ui, '', (
             'This will delete all content inside:\n\n'
             f'{target_mod_folder.resolve()}\n'
             'and commit these mods afterwards:\n\n'
@@ -383,13 +383,27 @@ everything inside this folder?\n{del_path_target}")
                 modpack.initialize_configs(
                     profile, mod_list, INPUT_FOLDER, Path(self.game_setting['game_mod_folder']))
             except Exception as e:
-                QMessageBox.warning(self, '', f'Something went wrong\n{e}')
+                QMessageBox.warning(self.ui, '', f'Something went wrong\n{e}')
             else:
-                QMessageBox.information(self, 'Done', 'Mods are loaded!')
+                QMessageBox.information(self.ui, 'Done', 'Mods are loaded!')
                 self.set_dirty_status(False)
 
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(argv)
-    window = Ui()
-    app.exec_()
+    app = QApplication(sys.argv)
+
+    ui_file_name = MAIN_UI_PATH
+    ui_file = QFile(ui_file_name)
+    if not ui_file.open(QIODevice.ReadOnly):
+        print(f"Cannot open {ui_file_name}: {ui_file.errorString()}")
+        sys.exit(-1)
+    loader = QUiLoader()
+    window = loader.load(ui_file)
+    ui_file.close()
+    if not window:
+        print(loader.errorString())
+        sys.exit(-1)
+    modbuddy = Modbuddy(window)
+    window.show()
+
+    sys.exit(app.exec())
