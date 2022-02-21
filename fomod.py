@@ -14,7 +14,6 @@ class FomodParser:
         xml = ElementTree.parse(self.fomod_file).getroot()
         
         self.module_name = xml.findtext("./moduleName")
-        #print(self.module_name)
         self.install_steps = [InstallSteps(x) for x in xml.findall("./installSteps")]
 
         self.build_ui()
@@ -56,7 +55,6 @@ class FomodParser:
 class InstallSteps:
     def __init__(self, xml: ElementTree.Element):
         self.order = xml.get("order")
-        #print(self.order)
         
         self.install_steps = [InstallStep(x) for x in xml.findall("./installStep")]
 
@@ -65,27 +63,23 @@ class InstallStep:
     def __init__(self, xml:ElementTree.Element):
         self.name = xml.get("name")
         self.optional_file_groups = [OptionalFileGroups(x) for x in xml.findall("./optionalFileGroups")]
-        print("install" + str(self.name))
 
 
 class OptionalFileGroups:
     def __init__(self, xml:ElementTree.Element):
         self.order = xml.get("order")
-        print(self.order)
         self.groups = [Group(x) for x in xml.findall("./group")]
 
 class Group:
     def __init__(self, xml:ElementTree.Element):
         self.name = xml.get("name")
         self.type = xml.get("type")
-        print(self.name)
         self.plugin_collection = [Plugins(x) for x in xml.findall("./plugins")]
 
 class Plugins:
     def __init__(self, xml:ElementTree.Element):
         self.name = xml.get("name")
         self.description = xml.findtext("description")
-        print(self.name, self.description)
         self.plugins = [Plugin(x) for x in xml.findall("./plugin")]
 
 class Plugin:
@@ -98,10 +92,6 @@ class Plugin:
             self.image = xml.find("./image").get('path')
         except AttributeError:
             self.image = None
-        print("Plugin:")
-        print(self.name)
-        print(self.image)
-        print(self.flags)
 
         self.files_collection = [Files(x) for x in xml.findall("./files")]
 
@@ -115,8 +105,6 @@ class Folder:
         self.destination = xml.get("destination")
         self.priority = xml.get("priority")
 
-        #print(self.source)
-
 
 if __name__ == "__main__":
     QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
@@ -125,4 +113,4 @@ if __name__ == "__main__":
     payload = sys.argv[1]
     parser = FomodParser(Path(payload))
     app.exec()
-    #print(parser)
+
