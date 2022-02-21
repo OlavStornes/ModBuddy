@@ -1,20 +1,62 @@
-from pathlib import PosixPath
+from pathlib import Path
 import sys
 from xml.etree import ElementTree
-
+from PySide6.QtWidgets import QLabel, QRadioButton, QApplication
+from PySide6.QtCore import Qt, QCoreApplication
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QLabel,QRadioButton, QGridLayout, QWizard, QWizardPage, QTextEdit
 
 class FomodParser:
-    def __init__(self, xml_path:PosixPath|str):
-        xml = ElementTree.parse(xml_path).getroot()
+    def __init__(self, mod_folder:Path):
+        self.mod_folder = mod_folder
+        self.fomod_file = Path(mod_folder) / 'fomod/ModuleConfig.xml' 
+
+        xml = ElementTree.parse(self.fomod_file).getroot()
         
         self.module_name = xml.findtext("./moduleName")
-        print(self.module_name)
+        #print(self.module_name)
         self.install_steps = [InstallSteps(x) for x in xml.findall("./installSteps")]
+
+        self.build_ui()
+        self.ui.show()
+        
+    def build_ui(self):
+        self.ui = QWizard()
+        for x in self.install_steps:
+            for y in x.install_steps:
+                for z in y.optional_file_groups:
+                    # wiz_page = QWizardPage()
+                    # layout = QFormLayout()
+                    for lul in z.groups:
+                        # wiz_page.setLayout(layout)
+                        # wiz_page.setTitle(y.name)
+                        # self.ui.addPage(wiz_page)
+                        new_page = QWizardPage()
+                        new_layout = QGridLayout()
+                        new_layout.addWidget(QLabel(lul.name), 0, 0)
+                        for kek in lul.plugin_collection:
+                            for i, bur in enumerate(kek.plugins):
+                                new_layout.addWidget(QRadioButton(bur.name), i+1, 0)
+                                new_layout.addWidget(QTextEdit(bur.description), i+1, 1)
+
+                                if bur.image:
+                                    parsed_img = self.mod_folder / bur.image.replace('\\', '/')
+                                    img = QPixmap(parsed_img)
+                                
+
+                                    test = QLabel()
+                                    test.setPixmap(img)
+                                    new_layout.addWidget(test, i+1, 2)
+                            new_page.setTitle(y.name)
+                            new_page.setLayout(new_layout)    
+                            self.ui.addPage(new_page)
+
+
 
 class InstallSteps:
     def __init__(self, xml: ElementTree.Element):
         self.order = xml.get("order")
-        print(self.order)
+        #print(self.order)
         
         self.install_steps = [InstallStep(x) for x in xml.findall("./installStep")]
 
@@ -73,12 +115,14 @@ class Folder:
         self.destination = xml.get("destination")
         self.priority = xml.get("priority")
 
-        print(self.source)
-        
+        #print(self.source)
 
 
 if __name__ == "__main__":
-    payload = sys.argv[1]
-    parser = FomodParser(payload)
+    QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
+    app = QApplication(sys.argv)
 
-    print(parser)
+    payload = sys.argv[1]
+    parser = FomodParser(Path(payload))
+    app.exec()
+    #print(parser)
