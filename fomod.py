@@ -39,12 +39,11 @@ class FomodParser:
                                     parsed_img = self.mod_folder / bur.image.replace('\\', '/')
                                     img = QPixmap(parsed_img)
                                 
-
                                     test = QLabel()
                                     test.setPixmap(img)
                                     new_layout.addWidget(test, i+1, 2)
                             new_page.setTitle(y.name)
-                            new_page.setLayout(new_layout)    
+                            new_page.setLayout(new_layout)
                             self.ui.addPage(new_page)
 
 
