@@ -32,6 +32,7 @@ class FomodParser:
                             for i, bur in enumerate(kek.plugins):
                                 target_radio = QRadioButton(bur.name)
                                 new_layout.addWidget(target_radio, i+1, 0)
+                                target_radio.toggled.connect(bur.update)
                                 new_layout.addWidget(QTextEdit(bur.description), i+1, 1)
 
                                 if bur.image:
@@ -83,6 +84,7 @@ class Plugin:
         self.name = xml.get("name")
         self.description = xml.findtext("description")
         self.flags = [x.get("name") for x in xml.findall("./conditionFlags/flag")]
+        self.enabled = False
         
         try:
             self.image = xml.find("./image").get('path')
@@ -90,6 +92,10 @@ class Plugin:
             self.image = None
 
         self.files_collection = [Files(x) for x in xml.findall("./files")]
+
+    def update(self, arg):
+        self.enabled = arg
+
 
 class Files:
     def __init__(self, xml:ElementTree.Element):
