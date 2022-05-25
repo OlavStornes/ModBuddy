@@ -24,12 +24,7 @@ class FomodParser:
         for x in self.install_steps:
             for y in x.install_steps:
                 for z in y.optional_file_groups:
-                    # wiz_page = QWizardPage()
-                    # layout = QFormLayout()
                     for lul in z.groups:
-                        # wiz_page.setLayout(layout)
-                        # wiz_page.setTitle(y.name)
-                        # self.ui.addPage(wiz_page)
                         new_page = QWizardPage()
                         new_layout = QGridLayout()
                         new_layout.addWidget(QLabel(lul.name), 0, 0)
