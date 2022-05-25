@@ -17,7 +17,6 @@ class FomodParser:
         self.install_steps = [InstallSteps(x) for x in xml.findall("./installSteps")]
 
         self.build_ui()
-        self.ui.show()
         
     def build_ui(self):
         self.ui = QWizard()
@@ -129,6 +128,7 @@ if __name__ == "__main__":
 
     payload = sys.argv[1]
     parser = FomodParser(Path(payload))
+    parser.ui.show()
     app.exec()
 
     parser.handle_results()
