@@ -30,7 +30,8 @@ class FomodParser:
                         new_layout.addWidget(QLabel(lul.name), 0, 0)
                         for kek in lul.plugin_collection:
                             for i, bur in enumerate(kek.plugins):
-                                new_layout.addWidget(QRadioButton(bur.name), i+1, 0)
+                                target_radio = QRadioButton(bur.name)
+                                new_layout.addWidget(target_radio, i+1, 0)
                                 new_layout.addWidget(QTextEdit(bur.description), i+1, 1)
 
                                 if bur.image:
