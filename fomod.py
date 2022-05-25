@@ -46,6 +46,22 @@ class FomodParser:
                             new_page.setLayout(new_layout)
                             self.ui.addPage(new_page)
 
+    def handle_results(self):
+        print("hanlding results")
+        for x in self.install_steps:
+            for xx in x.install_steps:
+                for y in xx.optional_file_groups:
+                    for yy in y.groups:
+                        for z in yy.plugin_collection:
+                            for zz in z.plugins:
+                                if zz.enabled:
+                                    for mod in zz.files_collection:
+                                        print(zz.enabled, yy.name)
+                                        for folder in mod.folders:
+                                            testpath = Path(sys.argv[1])
+                                            testpath = testpath / str(folder.source)
+                                            print(testpath.absolute(), testpath.exists())
+
 
 
 class InstallSteps:
@@ -114,4 +130,6 @@ if __name__ == "__main__":
     payload = sys.argv[1]
     parser = FomodParser(Path(payload))
     app.exec()
+
+    parser.handle_results()
 
