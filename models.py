@@ -10,7 +10,7 @@ class ModModel(QtCore.QAbstractTableModel):
         self.profile = profile
         self.game_setting = settings
         self.mod_order = []
-        self.headers = ('enabled', 'name', 'path')
+        self.headers = ('enabled', 'name', 'type', 'path')
 
         self.parse_mods_from_settings()
 
@@ -62,6 +62,8 @@ class ModModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             if self.headers[index.column()] == 'name':
                 return row.get('name')
+            if self.headers[index.column()] == 'type':
+                return row.get('type', 'basic')
             if self.headers[index.column()] == 'path':
                 return self.parse_path(row)
 
