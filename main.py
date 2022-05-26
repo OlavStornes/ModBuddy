@@ -134,7 +134,7 @@ class Modbuddy():
         """Take the current mod setup presented,
         create a new mod preset and save it to the settings"""
         preset_name, ok = QInputDialog.getText(
-            self, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
+            self.ui, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
         if not ok:
             return
 
@@ -359,7 +359,7 @@ class Modbuddy():
         else:
             del_path_target = target_modfolder.resolve()
             x = QMessageBox.question(
-                self, 'DELETING FOLDER', f"Are you sure you want to delete \
+                self.ui, 'DELETING FOLDER', f"Are you sure you want to delete \
 everything inside this folder?\n{del_path_target}")
 
             if x == QMessageBox.Yes:
