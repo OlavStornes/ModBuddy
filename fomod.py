@@ -58,7 +58,7 @@ class FomodParser:
                                     for mod in zz.files_collection:
                                         print(zz.enabled, yy.name)
                                         for folder in mod.folders:
-                                            testpath = Path(sys.argv[1])
+                                            testpath = Path(self.mod_folder)
                                             testpath = testpath / str(folder.source)
                                             print(testpath.absolute(), testpath.exists())
 
