@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QLabel,QRadioButton, QGridLayout, QWizard, QWizard
 class FomodParser:
     def __init__(self, mod_folder:Path):
         self.mod_folder = mod_folder
-        self.fomod_file = Path(mod_folder) / 'fomod/ModuleConfig.xml' 
+        self.fomod_file = Path(mod_folder) / 'fomod/ModuleConfig.xml'
 
         xml = ElementTree.parse(self.fomod_file).getroot()
         
@@ -65,9 +65,6 @@ class FomodParser:
                                         for folder in mod.folders:
                                             testpath = Path(self.mod_folder)
                                             testpath = testpath / str(folder.source)
-                                            print(testpath.absolute(), testpath.exists())
-
-
                                             tmp[f"{str(i)}{yy.name}"] = folder.to_dict()
         return tmp
 

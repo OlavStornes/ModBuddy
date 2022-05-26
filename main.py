@@ -268,7 +268,7 @@ class Modbuddy():
         default_mod_folder = self.game_setting.get('default_mod_folder')
         if not default_mod_folder:
             QMessageBox.warning(self.ui, '', (
-                "Sorry, but your settings doesn't have ",
+                "Sorry, but your settings doesn't have " \
                 "a default destination for mods. Is it an old config?"))
 
         assert type(default_mod_folder) is str
