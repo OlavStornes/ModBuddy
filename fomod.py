@@ -20,28 +20,28 @@ class FomodParser:
         
     def build_ui(self):
         self.ui = QWizard()
-        for x in self.install_steps:
-            for y in x.install_steps:
-                for z in y.optional_file_groups:
-                    for lul in z.groups:
+        for install_steps_collection in self.install_steps:
+            for install_step in install_steps_collection.install_steps:
+                for optional_file_group in install_step.optional_file_groups:
+                    for group in optional_file_group.groups:
                         new_page = QWizardPage()
                         new_layout = QGridLayout()
-                        new_layout.addWidget(QLabel(lul.name), 0, 0)
-                        for kek in lul.plugin_collection:
-                            for i, bur in enumerate(kek.plugins):
-                                target_radio = QRadioButton(bur.name)
+                        new_layout.addWidget(QLabel(group.name), 0, 0)
+                        for plugin_collection in group.plugin_collection:
+                            for i, plugin in enumerate(plugin_collection.plugins):
+                                target_radio = QRadioButton(plugin.name)
                                 new_layout.addWidget(target_radio, i+1, 0)
-                                target_radio.toggled.connect(bur.update)
-                                new_layout.addWidget(QTextEdit(bur.description), i+1, 1)
+                                target_radio.toggled.connect(plugin.update)
+                                new_layout.addWidget(QTextEdit(plugin.description), i+1, 1)
 
-                                if bur.image:
-                                    parsed_img = self.mod_folder / bur.image.replace('\\', '/')
+                                if plugin.image:
+                                    parsed_img = self.mod_folder / plugin.image.replace('\\', '/')
                                     img = QPixmap(parsed_img)
                                 
                                     test = QLabel()
                                     test.setPixmap(img)
                                     new_layout.addWidget(test, i+1, 2)
-                            new_page.setTitle(y.name)
+                            new_page.setTitle(install_step.name)
                             new_page.setLayout(new_layout)
                             self.ui.addPage(new_page)
 
@@ -53,19 +53,17 @@ class FomodParser:
     def handle_results(self) -> dict:
         tmp = {}
         print("hanlding results")
-        for x in self.install_steps:
-            for i, xx in enumerate(x.install_steps):
-                for y in xx.optional_file_groups:
-                    for yy in y.groups:
-                        for z in yy.plugin_collection:
-                            for zz in z.plugins:
-                                if zz.enabled:
-                                    for mod in zz.files_collection:
-                                        print(zz.enabled, yy.name)
-                                        for folder in mod.folders:
-                                            testpath = Path(self.mod_folder)
-                                            testpath = testpath / str(folder.source)
-                                            tmp[f"{str(i)}{yy.name}"] = folder.to_dict()
+        for install_steps_collection in self.install_steps:
+            for i, install_step in enumerate(install_steps_collection.install_steps):
+                for optional_file_group in install_step.optional_file_groups:
+                    for group in optional_file_group.groups:
+                        for plugins_collection in group.plugin_collection:
+                            for plugin in plugins_collection.plugins:
+                                if plugin.enabled:
+                                    for files in plugin.files_collection:
+                                        print(plugin.enabled, group.name)
+                                        for folder in files.folders:
+                                            tmp[f"{str(i)}{group.name}"] = folder.to_dict()
         return tmp
 
 class InstallSteps:
