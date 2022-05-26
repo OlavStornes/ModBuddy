@@ -283,6 +283,11 @@ class Modbuddy():
             except shutil.ReadError:
                 QMessageBox.warning(self.ui, '', f'Sorry, but {suff}-archives is not supported')
             else:
+                if Path.exists(target_folder / 'fomod'):
+                    x = QMessageBox.question(self.ui, '', ("Fomod folder detected. Do you want to parse it as a fomod-mod?"))
+                    if x == QMessageBox.Yes:
+                        self.begin_fomod_parsing(target_folder)
+                        return
                 self.add_mod(target_folder)
 
     def add_mod(self, folder_path: Path):
