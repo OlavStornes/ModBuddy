@@ -39,8 +39,8 @@ class ModModel(QtCore.QAbstractTableModel):
         assert type(mod_settings) is dict
 
         relative_path = mod_settings.get(row.get('name'))
-        assert type(relative_path) is str
         try:
+            assert isinstance(relative_path, str)
             path_parsed = relative_path.replace(self.game_setting.get('default_mod_folder'), '.')
         except:
             return relative_path
