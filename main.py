@@ -27,6 +27,7 @@ class Modbuddy():
     def __init__(self, ui: QMainWindow):
 
         self.ui = ui
+        self.fomod = None
 
         self.init_settings()
 
