@@ -38,7 +38,8 @@ class ModPack():
 
 def initialize_configs(profile_payload: dict, mod_list: dict, input_folder: Path, output_folder: Path):
     for single_mod in profile_payload:
-        if single_mod.get('enabled'):
-            target_folder = input_folder / mod_list.get(single_mod.get('name'))
-            x = ModPack(target_folder, output_folder)
-            x.add_mod()
+        if not single_mod.get('enabled'):
+            continue
+        target_folder = input_folder / mod_list.get(single_mod.get('name'))
+        x = ModPack(target_folder, output_folder)
+        x.add_mod()
