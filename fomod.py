@@ -45,6 +45,11 @@ class FomodParser:
                             new_page.setLayout(new_layout)
                             self.ui.addPage(new_page)
 
+        final_page = QWizardPage()
+        self.finished = self.ui.button(QWizard.FinishButton)
+        final_page.setFinalPage(True)
+        self.ui.addPage(final_page)
+
     def handle_results(self) -> dict:
         tmp = {}
         print("hanlding results")
