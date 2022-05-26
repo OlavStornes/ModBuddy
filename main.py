@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from os import path as ospath
+from fomod import FomodParser
 import models
 from pathlib import Path
 from PySide6.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QMainWindow, QFileSystemModel, QApplication
@@ -317,6 +318,25 @@ class Modbuddy():
         self.modmodel.layoutChanged.emit()
         self.set_dirty_status(True)
 
+    def add_row_to_mods_fomod_style(self, name: str, path: Path, fomod_results: dict):
+        """Add a given mod to the current game with fomod-related presets
+
+        :param name: unique name of the mod
+        :type name: str
+        :param path: A path representing the root of the folder, defaults to Path
+        :type path: Path, optional
+        """
+        self.game_setting['mods'][name] = str(path)
+        for x in self.game_setting['profiles'].values():
+            x.append({
+                'name': name,
+                'enabled': False,
+                'type': 'fomod',
+                'options': fomod_results
+            })
+        self.modmodel.layoutChanged.emit()
+        self.set_dirty_status(True)
+
     def get_mod_list_row(self):
         return self.ui.mod_list.selectionModel().selectedRows()[0].row()
 
@@ -391,6 +411,25 @@ everything inside this folder?\n{del_path_target}")
             else:
                 QMessageBox.information(self.ui, 'Done', 'Mods are loaded!')
                 self.set_dirty_status(False)
+
+
+    def begin_fomod_parsing(self, base_folder: Path):
+        """Begin parsing of FOMOD-modpacks"""
+        if self.fomod is not None:
+            return
+
+        self.fomod = FomodParser(base_folder)
+        self.fomod.ui.show()
+        self.fomod.finished.clicked.connect(self.handle_fomod_results)
+
+    def handle_fomod_results(self):
+        """Handle results from parsing a fomod-folder"""
+        assert isinstance(self.fomod, FomodParser)
+        results = self.fomod.handle_results()
+
+        self.add_row_to_mods_fomod_style(str(self.fomod.module_name), self.fomod.mod_folder, results)
+        self.fomod = None
+        print(results)
 
 
 if __name__ == "__main__":
