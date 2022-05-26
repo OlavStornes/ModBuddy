@@ -45,10 +45,11 @@ class FomodParser:
                             new_page.setLayout(new_layout)
                             self.ui.addPage(new_page)
 
-    def handle_results(self):
+    def handle_results(self) -> dict:
+        tmp = {}
         print("hanlding results")
         for x in self.install_steps:
-            for xx in x.install_steps:
+            for i, xx in enumerate(x.install_steps):
                 for y in xx.optional_file_groups:
                     for yy in y.groups:
                         for z in yy.plugin_collection:
@@ -62,6 +63,8 @@ class FomodParser:
                                             print(testpath.absolute(), testpath.exists())
 
 
+                                            tmp[f"{str(i)}{yy.name}"] = folder.to_dict()
+        return tmp
 
 class InstallSteps:
     def __init__(self, xml: ElementTree.Element):
@@ -120,6 +123,13 @@ class Folder:
         self.source = xml.get("source")
         self.destination = xml.get("destination")
         self.priority = xml.get("priority")
+
+    def to_dict(self) -> dict:
+        return {
+            "source": self.source,
+            "destination": self.destination,
+            "priority": self.priority
+        }
 
 
 if __name__ == "__main__":
