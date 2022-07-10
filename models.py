@@ -60,6 +60,8 @@ class ModModel(QtCore.QAbstractTableModel):
             else:
                 return Qt.Unchecked
         if role == QtCore.Qt.DisplayRole:
+            if self.headers[index.column()] == 'enabled':
+                return row.get('enabled')
             if self.headers[index.column()] == 'name':
                 return row.get('name')
             if self.headers[index.column()] == 'type':

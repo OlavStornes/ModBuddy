@@ -36,6 +36,7 @@ class Modbuddy():
 
         # Connect buttons
         self.ui.move_up.clicked.connect(self.move_row_up)
+        self.ui.toggle_mod.clicked.connect(self.toggle_targeted_mod)
         self.ui.move_down.clicked.connect(self.move_row_down)
         self.ui.new_mod_button.clicked.connect(self.install_new_mod)
         self.ui.new_mod_archived_button.clicked.connect(self.install_new_archived_mod)
@@ -370,6 +371,17 @@ class Modbuddy():
         game_profile[index_a], game_profile[index_b] = game_profile[index_b], game_profile[index_a]
         self.modmodel.layoutChanged.emit()
         self.set_dirty_status(True)
+
+    def toggle_targeted_mod(self):
+        """Toggle selected mod."""
+        row = self.get_mod_list_row()
+        try:
+            game_profile = self.game_setting['profiles'].get(self.get_current_profile())
+            game_profile[row]['enabled'] = not game_profile[row]['enabled']
+            self.modmodel.layoutChanged.emit()
+            self.set_dirty_status(True)
+        except IndexError:
+            pass
 
     def init_tablewidget(self, profile=""):
         """Initialize the table with mods
