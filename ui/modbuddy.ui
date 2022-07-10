@@ -229,6 +229,13 @@
                </property>
               </widget>
              </item>
+	     <item>
+              <widget class="QPushButton" name="edit_mod">
+               <property name="text">
+                <string>EDIT</string>
+               </property>
+              </widget>
+             </item>
              <item>
               <widget class="QPushButton" name="move_down">
                <property name="text">

@@ -17,6 +17,7 @@ SETTINGS_NAME = PROJECT_PATH / 'settings.json'
 GAME_PRESET_FOLDER = PROJECT_PATH / 'games'
 PRESET_FILE_NAME = 'game_setting.json'
 MAIN_UI_PATH = PROJECT_PATH / 'ui' / 'modbuddy.ui'
+FORM_PATH = PROJECT_PATH / 'ui' / 'edit_mod_form.ui'
 
 ENABLED_COLUMN = 0
 MODNAME_COLUMN = 1
@@ -37,6 +38,7 @@ class Modbuddy():
         # Connect buttons
         self.ui.move_up.clicked.connect(self.move_row_up)
         self.ui.toggle_mod.clicked.connect(self.toggle_targeted_mod)
+        self.ui.edit_mod.clicked.connect(self.edit_targeted_mod)
         self.ui.move_down.clicked.connect(self.move_row_down)
         self.ui.new_mod_button.clicked.connect(self.install_new_mod)
         self.ui.new_mod_archived_button.clicked.connect(self.install_new_archived_mod)
@@ -374,6 +376,42 @@ class Modbuddy():
         game_profile[index_a], game_profile[index_b] = game_profile[index_b], game_profile[index_a]
         self.modmodel.layoutChanged.emit()
         self.set_dirty_status(True)
+
+    def edit_targeted_mod(self):
+        """Edit selected mod."""
+        row = self.get_mod_list_row()
+        try:
+            game_profile = self.game_setting['profiles'].get(self.get_current_profile())
+            mod_settings = self.game_setting['mods']
+            targeted_mod = mod_settings.get(game_profile[row]['name'])
+
+            old_path = mod_settings.get(game_profile[row]['name'])
+            old_name = game_profile[row]['name']
+            loader = QUiLoader()
+            dialog = loader.load(FORM_PATH, self.ui)
+            dialog.nameLineEdit.insert(game_profile[row]['name'])
+            dialog.enabledCheckBox.setChecked(game_profile[row]['enabled'])
+            dialog.pathLineEdit.insert(old_path)
+            dialog.show()
+            if dialog.exec():
+                self.set_dirty_status(True)
+                new_path = dialog.pathLineEdit.text()
+                new_name = dialog.nameLineEdit.text()
+                if new_name != old_name:
+                    # Update all profiles with new name
+                    mod_settings[new_name] = mod_settings.pop(old_name)
+                    for x in self.game_setting['profiles'].values():
+                        for y in x:
+                            if y.get('name') == old_name:
+                                y['name'] = new_name
+
+                if new_path != old_path:
+                    mod_settings[new_name] = new_path
+
+                game_profile[row]['enabled'] = bool(dialog.enabledCheckBox.checkState())
+
+        except IndexError:
+            pass
 
     def toggle_targeted_mod(self):
         """Toggle selected mod."""
