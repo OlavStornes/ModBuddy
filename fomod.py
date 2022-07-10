@@ -111,6 +111,7 @@ class Plugin:
         self.files_collection = [Files(x) for x in xml.findall("./files")]
 
     def update(self, arg):
+        """Update if the plugin is enabled or not."""
         self.enabled = arg
 
 
@@ -125,6 +126,7 @@ class Folder:
         self.priority = xml.get("priority")
 
     def to_dict(self) -> dict:
+        """Convert to a dictionary."""
         return {
             "source": self.source,
             "destination": self.destination,

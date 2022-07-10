@@ -59,7 +59,7 @@ class Modbuddy():
 
 
     def init_settings(self):
-        """ Initial setup for mod buddy"""
+        """Initial setup for mod buddy."""
         GAME_PRESET_FOLDER.mkdir(exist_ok=True)
         try:
             self.settings = json.loads(Path(SETTINGS_NAME).read_text())
@@ -76,15 +76,15 @@ class Modbuddy():
                 subpath.unlink()
 
     def get_current_game(self) -> str:
-        """ Retrieve what game is currently active"""
+        """Retrieve what game is currently active."""
         return self.ui.game_combobox.currentText()
 
     def get_current_profile(self) -> str:
-        """ Retrieve what profile is currently active"""
+        """Retrieve what profile is currently active."""
         return self.ui.profile_combobox.currentText()
 
     def update_game_combobox(self):
-        """Update information inside the game combobox"""
+        """Update information inside the game combobox."""
         self.ui.game_combobox.clear()
         current_game = self.settings.get('lastactivity', {}).get('game')
         index = None
@@ -96,7 +96,7 @@ class Modbuddy():
             self.ui.game_combobox.setCurrentIndex(index)
 
     def update_profile_combobox(self):
-        """Update information inside the preset combobox"""
+        """Update information inside the preset combobox."""
         self.ui.profile_combobox.clear()
         current_game = self.settings.get('lastactivity', {}).get('profile')
         index = None
@@ -108,7 +108,7 @@ class Modbuddy():
             self.ui.profile_combobox.setCurrentIndex(index)
 
     def update_last_activity(self, game: str = "", profile: str = ""):
-        """Update the current last_activity and store it
+        """Update the current last_activity and store it.
 
         :param game: Current game, defaults to ""
         :type game: str, optional
@@ -125,7 +125,7 @@ class Modbuddy():
             json.dumps(self.settings, indent=4))
 
     def retrieve_last_activity(self):
-        """Update the UI with contents from lastactivity"""
+        """Update the UI with contents from lastactivity."""
         last = self.settings.get('lastactivity')
         if last:
             game = last.get('game')
@@ -134,8 +134,11 @@ class Modbuddy():
             self.load_profile(profile)
 
     def create_new_mod_table_config(self):
-        """Take the current mod setup presented,
-        create a new mod preset and save it to the settings"""
+        """Create a new mod table configuration.
+
+        Take the current mod setup presented,
+        create a new mod preset and save it to the settings
+        """
         preset_name, ok = QInputDialog.getText(
             self.ui, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
         if not ok:
@@ -150,12 +153,12 @@ class Modbuddy():
         self.update_profile_combobox()
 
     def write_preset_to_config(self):
-        """Update the current mod setup to its respective profile"""
+        """Update the current mod setup to its respective profile."""
         Path(self.target_preset_path).write_text(
             json.dumps(self.game_setting, indent=4))
 
     def load_profile(self, target_profile: str):
-        """Initialize a chosen preset to the mod table
+        """Initialize a chosen preset to the mod table.
 
         :param target_profile: A profile that exists inside profiles in 'game_setting.json'
         :type target_profile: str
@@ -164,13 +167,13 @@ class Modbuddy():
         self.init_tablewidget(target_profile)
 
     def load_current_profile(self):
-        """Initialize the current preset (Chosen in GUI)"""
+        """Initialize the current preset (Chosen in GUI)."""
         preset = self.get_current_profile()
         self.load_profile(preset)
         self.update_last_activity()
 
     def update_fileview(self):
-        """Update the file explorer with current game settings"""
+        """Update the file explorer with current game settings."""
         mod_path = self.game_setting.get('game_mod_folder')
         if not mod_path:
             return
@@ -182,13 +185,13 @@ class Modbuddy():
         self.ui.file_view.expand(self.fs_mod.index(mod_path))
         
     def set_dirty_status(self, dirty: bool):
-        """Update functionality on buttons with regards to modified contents"""
+        """Update functionality on buttons with regards to modified contents."""
         self.is_dirty = dirty
         self.ui.initialize_mod.setEnabled(self.is_dirty)
         self.ui.save_profile_button.setEnabled(self.is_dirty)
 
     def create_new_game(self):
-        """Start a wizard to create a new game"""
+        """Start a wizard to create a new game."""
         game_mod_folder_str = QFileDialog.getExistingDirectory(
             self.ui, 'Get mod folder'
         )
@@ -237,7 +240,7 @@ class Modbuddy():
         self.load_game(game_preset_name)
 
     def load_game(self, target_preset: str):
-        """Load a new game and its presets
+        """Load a new game and its presets.
 
         :Param target_preset: Name of game (set when creating a new game)
         :type target_preset: str
@@ -253,17 +256,17 @@ class Modbuddy():
         self.set_dirty_status(False)
 
     def load_targeted_game(self):
-        """Load the game selected in GUI"""
+        """Load the game selected in GUI."""
         target_game = self.get_current_game()
         self.load_game(target_game)
         self.update_last_activity()
 
     def install_new_mod(self):
-        """Install a new mod already extracted somewhere"""
+        """Install a new mod already extracted somewhere."""
         self.add_mod(Path(self.game_setting.get('default_mod_folder') or "."))
 
     def install_new_archived_mod(self):
-        """Install a new mod from an archive"""
+        """Install a new mod from an archive."""
         archives = QFileDialog.getOpenFileNames(
             self.ui, 'Select archives to be installed', str(Path.home()), "Supported archives (*.zip *.tar)")
         if not archives:
@@ -292,7 +295,7 @@ class Modbuddy():
                 self.add_mod(target_folder)
 
     def add_mod(self, folder_path: Path):
-        """Import a mod to the current game
+        """Import a mod to the current game.
 
         :param folder_path: A path representing the 'root' of the mod folder
         :type folder_path: Path
@@ -315,7 +318,7 @@ class Modbuddy():
                 self.add_row_to_mods(name=text, path=Path(folder))
 
     def add_row_to_mods(self, name: str, path: Path):
-        """Add a given mod to the current game
+        """Add a given mod to the current game.
 
         :param name: unique name of the mod
         :type name: str
@@ -332,7 +335,7 @@ class Modbuddy():
         self.set_dirty_status(True)
 
     def add_row_to_mods_fomod_style(self, name: str, path: Path, fomod_results: dict):
-        """Add a given mod to the current game with fomod-related presets
+        """Add a given mod to the current game with fomod-related presets.
 
         :param name: unique name of the mod
         :type name: str
@@ -366,7 +369,7 @@ class Modbuddy():
             pass
         
     def _move_row(self, index_a: int, index_b: int):
-        """Switch an entry between two rows in the mod list"""
+        """Switch an entry between two rows in the mod list."""
         game_profile = self.game_setting['profiles'].get(self.get_current_profile())
         game_profile[index_a], game_profile[index_b] = game_profile[index_b], game_profile[index_a]
         self.modmodel.layoutChanged.emit()
@@ -384,7 +387,7 @@ class Modbuddy():
             pass
 
     def init_tablewidget(self, profile=""):
-        """Initialize the table with mods
+        """Initialize the table with mods.
 
         :param profile: Profile name, defaults to ""
         :type profile: str, optional
@@ -411,7 +414,7 @@ everything inside this folder?\n{del_path_target}")
                 QMessageBox.information(self.ui, 'Done', 'Mods are cleaned!')
 
     def letsgo_mydudes(self):
-        """Commit the current setup and fire the modifications"""
+        """Commit the current setup and fire the modifications."""
         profile = self.game_setting['profiles'].get(self.get_current_profile())
         mod_list = self.game_setting['mods']
         enabled_mods = ',\n'.join([x.get('name') for x in profile if x.get('enabled')])
@@ -438,7 +441,7 @@ everything inside this folder?\n{del_path_target}")
 
 
     def begin_fomod_parsing(self, base_folder: Path):
-        """Begin parsing of FOMOD-modpacks"""
+        """Begin parsing of FOMOD-modpacks."""
         if self.fomod is not None:
             return
 
@@ -447,7 +450,7 @@ everything inside this folder?\n{del_path_target}")
         self.fomod.finished.clicked.connect(self.handle_fomod_results)
 
     def handle_fomod_results(self):
-        """Handle results from parsing a fomod-folder"""
+        """Handle results from parsing a fomod-folder."""
         assert isinstance(self.fomod, FomodParser)
         results = self.fomod.handle_results()
 

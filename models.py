@@ -1,10 +1,12 @@
 from typing import Any, Dict, List
-from PySide6 import QtCore
+from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
+from typing import Union
 
 
 class ModModel(QtCore.QAbstractTableModel):
-    """An implementation for handling mod data in a QT.QTableView"""
+    """An implementation for handling mod data in a QT.QTableView."""
+
     def __init__(self, *args: tuple[str], settings:Dict[str, Dict|str], profile: Any, **kwargs):
         super(ModModel, self).__init__(*args, **kwargs)
         self.profile = profile
@@ -15,9 +17,9 @@ class ModModel(QtCore.QAbstractTableModel):
         self.parse_mods_from_settings()
 
     def parse_mods_from_settings(self):
-        """Read game_setting and update mod_order with the current profile"""
+        """Read game_setting and update mod_order with the current profile."""
         if not self.game_setting:
-            return
+            return 
         try:
             profile = self.game_setting['profiles']
             assert type(profile) is dict
@@ -27,14 +29,14 @@ class ModModel(QtCore.QAbstractTableModel):
             pass
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int):
-        """Overridden function to support own headers"""
+        """Overridden function to support own headers."""
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return self.headers[section]
         return super().headerData(section, orientation, role)
 
 
     def parse_path(self, row: Dict):
-        """Attempt to strip away the unneccecary parts of a path for display"""
+        """Attempt to strip away the unneccecary parts of a path for display."""
         mod_settings = self.game_setting['mods']
         assert type(mod_settings) is dict
 
@@ -47,8 +49,11 @@ class ModModel(QtCore.QAbstractTableModel):
         return path_parsed
 
 
-    def data(self, index: QtCore.QModelIndex, role: int):
-        """Model-specific function to assist in displaying of data"""
+
+    def data(self,
+            index: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex],
+            role: int = Qt.ItemDataRole.DisplayRole) -> Any:
+        """Model-specific function to assist in displaying of data."""
         cur_profile = self.game_setting['profiles'][self.profile]
 
         row = cur_profile[index.row()]
@@ -70,7 +75,7 @@ class ModModel(QtCore.QAbstractTableModel):
                 return self.parse_path(row)
 
     def setData(self, index: QtCore.QModelIndex, value, role: int) -> bool:
-        """Overridden funciton to help with checkboxes"""
+        """Overridden funciton to help with checkboxes."""
         cur_profile = self.game_setting['profiles'][self.profile]
         assert type(cur_profile) is list
         if role == Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
