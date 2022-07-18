@@ -294,7 +294,7 @@ class Modbuddy():
             try:
                 folder_name = Path(archive).stem
                 target_folder = Path(default_mod_folder) / folder_name
-                patoolib.extract_archive(archive, outdir=target_folder, interactive=False)
+                patoolib.extract_archive(archive, outdir=str(target_folder), interactive=False)
             except Exception as e:
                 QMessageBox.warning(self.ui, '', f'An unexpected error orrured, {e}')
             else:
@@ -459,6 +459,7 @@ class Modbuddy():
             test.update()
             source.update(test.to_dict())
         self.sourcemodel.layoutChanged.emit()
+        self.write_preset_to_config()
 
     def download_sources(self):
         """Download outdated sources."""
@@ -470,14 +471,16 @@ class Modbuddy():
                 x.download_file(dl_path)
                 downloaded_file = dl_path / x.filename
                 try:
-                    patoolib.extract_archive(downloaded_file, outdir=dl_path, interactive=False)
+                    print(f'{downloaded_file=}')
+                    patoolib.extract_archive(str(downloaded_file), outdir=str(dl_path), interactive=True)
                     x.installed = datetime.now()
                     source.update(x.to_dict())
-                except:
-                    print("UHOH")
+                except Exception as e:
+                    raise
                 print("finished")
             else:
                 print("No need to download")
+        self.write_preset_to_config()
 
     def add_source(self):
         content, ok = QInputDialog.getMultiLineText(self.ui, "Gibe urls pls", "separate urls by newline", "")
@@ -485,6 +488,7 @@ class Modbuddy():
             for url in content.split('\n'):
                 self.game_setting.get('sources').append({'url': url})
         self.sourcemodel.layoutChanged.emit()
+        self.write_preset_to_config()
 
     def clean_target_modfolder(self):
         target_modfolder = Path(self.game_setting['game_mod_folder'])
