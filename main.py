@@ -58,6 +58,7 @@ class Modbuddy():
         self.ui.initialize_mod.clicked.connect(self.letsgo_mydudes)
 
         # - Sources
+        self.ui.source_add.clicked.connect(self.add_source)
         self.ui.source_check_updates.clicked.connect(self.update_sources)
         self.ui.source_download.clicked.connect(self.download_sources)
 
@@ -477,6 +478,13 @@ class Modbuddy():
                 print("finished")
             else:
                 print("No need to download")
+
+    def add_source(self):
+        content, ok = QInputDialog.getMultiLineText(self.ui, "Gibe urls pls", "separate urls by newline", "")
+        if ok:
+            for url in content.split('\n'):
+                self.game_setting.get('sources').append({'url': url})
+        self.sourcemodel.layoutChanged.emit()
 
     def clean_target_modfolder(self):
         target_modfolder = Path(self.game_setting['game_mod_folder'])
