@@ -65,14 +65,12 @@ class ModModel(QtCore.QAbstractTableModel):
             else:
                 return Qt.Unchecked
         if role == QtCore.Qt.DisplayRole:
-            if self.headers[index.column()] == 'enabled':
-                return row.get('enabled')
-            if self.headers[index.column()] == 'name':
-                return row.get('name')
             if self.headers[index.column()] == 'type':
                 return row.get('type', 'basic')
             if self.headers[index.column()] == 'path':
                 return self.parse_path(row)
+            else:
+                return row.get(self.headers[index.column()])
 
     def setData(self, index: QtCore.QModelIndex, value, role: int) -> bool:
         """Overridden funciton to help with checkboxes."""
