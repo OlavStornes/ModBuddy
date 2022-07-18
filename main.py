@@ -2,14 +2,17 @@
 import sys
 from os import path as ospath
 from fomod import FomodParser
+from datetime import datetime
 import models
 from pathlib import Path
 from PySide6.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QMainWindow, QFileSystemModel, QApplication
 from PySide6.QtCore import QFile, QIODevice, QCoreApplication, Qt
 from PySide6.QtUiTools import QUiLoader
 import shutil
+import patoolib
 import modpack
 import json
+import sources
 
 PROJECT_PATH = Path(ospath.dirname(sys.argv[0])).resolve()
 INPUT_FOLDER = PROJECT_PATH / Path('input')
@@ -29,6 +32,7 @@ class Modbuddy():
 
         self.ui = ui
         self.fomod = None
+        self.sources = None
 
         self.init_settings()
 
@@ -54,9 +58,14 @@ class Modbuddy():
         self.ui.load_game_button.clicked.connect(self.load_targeted_game)
         self.ui.initialize_mod.clicked.connect(self.letsgo_mydudes)
 
+        # - Sources
+        self.ui.source_check_updates.clicked.connect(self.update_sources)
+        self.ui.source_download.clicked.connect(self.download_sources)
+
         self.update_game_combobox()
         self.init_tablewidget()
         self.retrieve_last_activity()
+        self.init_sourcewidget()
         self.update_fileview()
 
 
@@ -436,6 +445,39 @@ class Modbuddy():
             settings=self.game_setting, profile=profile)
         self.ui.mod_list.setModel(self.modmodel)
         self.ui.mod_list.resizeColumnToContents(MODNAME_COLUMN)
+
+    def init_sourcewidget(self, profile=""):
+        """Initialize the table with sources."""
+        self.sourcemodel = models.SourceModel(
+            sources=self.game_setting.get('sources'))
+        self.ui.source_tableview.setModel(self.sourcemodel)
+
+    def update_sources(self):
+        """Update sources."""
+        for source in self.game_setting.get('sources'):
+            test = sources.SourceModdb.from_dict(source)
+            test.update()
+            source.update(test.to_dict())
+        self.sourcemodel.layoutChanged.emit()
+
+    def download_sources(self):
+        """Download outdated sources."""
+        for source in self.game_setting.get('sources'):
+            x = sources.SourceModdb.from_dict(source)
+            dl_path = Path(self.game_setting.get('default_mod_folder'))
+            if x.installed <= x.added:
+                print(f"Downloading {x.download_url=} to {dl_path=}")
+                x.download_file(dl_path)
+                downloaded_file = dl_path / x.filename
+                try:
+                    patoolib.extract_archive(downloaded_file, outdir=dl_path)
+                    x.installed = datetime.now()
+                    source.update(x.to_dict())
+                except:
+                    print("UHOH")
+                print("finished")
+            else:
+                print("No need to download")
 
     def clean_target_modfolder(self):
         target_modfolder = Path(self.game_setting['game_mod_folder'])
