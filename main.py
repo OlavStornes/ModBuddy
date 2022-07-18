@@ -8,7 +8,6 @@ from pathlib import Path
 from PySide6.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QMainWindow, QFileSystemModel, QApplication
 from PySide6.QtCore import QFile, QIODevice, QCoreApplication, Qt
 from PySide6.QtUiTools import QUiLoader
-import shutil
 import patoolib
 import modpack
 import json
@@ -279,7 +278,7 @@ class Modbuddy():
     def install_new_archived_mod(self):
         """Install a new mod from an archive."""
         archives = QFileDialog.getOpenFileNames(
-            self.ui, 'Select archives to be installed', str(Path.home()), "Supported archives (*.zip *.tar)")
+            self.ui, 'Select archives to be installed', str(Path.home()), "Supported archives (*.7z *.cb7 *.bz2 *.cab *.Z *.cpio *.deb *.dms *.flac *.gz *.iso *.lrz *.lha *.lzh *.lz *.lzma *.lzo *.rpm *.rar *.cbr *.rz *.shn *.tar *.cbt *.xz *.zip *.jar *.cbz *.zoo)")
         if not archives:
             return
         default_mod_folder = self.game_setting.get('default_mod_folder')
@@ -294,9 +293,9 @@ class Modbuddy():
             try:
                 folder_name = Path(archive).stem
                 target_folder = Path(default_mod_folder) / folder_name
-                shutil.unpack_archive(archive, target_folder)
-            except shutil.ReadError:
-                QMessageBox.warning(self.ui, '', f'Sorry, but {suff}-archives is not supported')
+                patoolib.extract_archive(archive, outdir=target_folder, interactive=False)
+            except Exception as e:
+                QMessageBox.warning(self.ui, '', f'An unexpected error orrured, {e}')
             else:
                 if Path.exists(target_folder / 'fomod'):
                     x = QMessageBox.question(self.ui, '', ("Fomod folder detected. Do you want to parse it as a fomod-mod?"))
@@ -470,7 +469,7 @@ class Modbuddy():
                 x.download_file(dl_path)
                 downloaded_file = dl_path / x.filename
                 try:
-                    patoolib.extract_archive(downloaded_file, outdir=dl_path)
+                    patoolib.extract_archive(downloaded_file, outdir=dl_path, interactive=False)
                     x.installed = datetime.now()
                     source.update(x.to_dict())
                 except:
