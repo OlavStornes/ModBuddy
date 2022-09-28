@@ -49,6 +49,8 @@ class Modbuddy():
         self.ui.load_game_button.clicked.connect(self.load_targeted_game)
         self.ui.initialize_mod.clicked.connect(self.letsgo_mydudes)
 
+        self.ui.exit_button.clicked.connect(app.exit)
+
         self.update_game_combobox()
         self.init_tablewidget()
         self.retrieve_last_activity()
