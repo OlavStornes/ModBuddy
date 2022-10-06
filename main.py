@@ -454,12 +454,17 @@ class Modbuddy():
 
     def update_sources(self):
         """Update sources."""
+        # Pull requests are welcome
+        x = QMessageBox.question(self.ui, '', ("Mod buddy can freeze a bit while this runs. Do you want to proceed?"))
+        if x != QMessageBox.Yes:
+            return
         for source in self.game_setting.get('sources'):
             test = sources.SourceModdb.from_dict(source)
             test.update()
             source.update(test.to_dict())
         self.sourcemodel.layoutChanged.emit()
         self.write_preset_to_config()
+        QMessageBox.information(self.ui, 'Done', 'Mod table are up to date')
 
     def download_sources(self):
         """Download outdated sources."""
