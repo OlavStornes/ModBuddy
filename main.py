@@ -321,12 +321,13 @@ class Modbuddy():
             x = QMessageBox.question(self.ui, '', ("Fomod folder detected. Do you want to parse it as a fomod-mod?"))
             if x == QMessageBox.Yes:
                 self.begin_fomod_parsing(folder)
-        else:
-            folder_name = Path(folder_path).stem
-            text, ok = QInputDialog.getText(
-                self.ui, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
-            if ok:
-                self.add_row_to_mods(name=text, path=Path(folder))
+                return
+
+        folder_name = Path(folder_path).stem
+        text, ok = QInputDialog.getText(
+            self.ui, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
+        if ok:
+            self.add_row_to_mods(name=text, path=folder)
 
     def add_row_to_mods(self, name: str, path: Path):
         """Add a given mod to the current game.
