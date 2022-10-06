@@ -463,6 +463,7 @@ class Modbuddy():
 
     def download_sources(self):
         """Download outdated sources."""
+        downloaded_something = False
         for source in self.game_setting.get('sources'):
             x = sources.SourceModdb.from_dict(source)
             if x.installed <= x.added:
@@ -480,8 +481,13 @@ class Modbuddy():
                 except Exception as e:
                     raise
                 print("finished")
+                downloaded_something = True
             else:
                 print("No need to download")
+        if downloaded_something:
+            QMessageBox.information(self.ui, 'Done', 'Sources are downloaded')
+        else:
+            QMessageBox.warning(self.ui, 'Nothing done', 'No mods were considered outdated.\nHave you checked for sources lately?')
         self.write_preset_to_config()
 
     def add_source(self):
