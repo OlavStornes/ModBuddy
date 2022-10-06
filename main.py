@@ -465,14 +465,16 @@ class Modbuddy():
         """Download outdated sources."""
         for source in self.game_setting.get('sources'):
             x = sources.SourceModdb.from_dict(source)
-            dl_path = Path(self.game_setting.get('default_mod_folder'))
             if x.installed <= x.added:
+                dl_path = Path(self.game_setting.get('default_mod_folder')) / x.filename.replace(".", "")
+                dl_path.mkdir(exist_ok=True)
+
                 print(f"Downloading {x.download_url=} to {dl_path=}")
                 x.download_file(dl_path)
                 downloaded_file = dl_path / x.filename
                 try:
                     print(f'{downloaded_file=}')
-                    patoolib.extract_archive(str(downloaded_file), outdir=str(dl_path), interactive=True)
+                    patoolib.extract_archive(str(downloaded_file), outdir=str(dl_path), interactive=False)
                     x.installed = datetime.now()
                     source.update(x.to_dict())
                 except Exception as e:
