@@ -336,6 +336,12 @@
           <layout class="QHBoxLayout" name="horizontalLayout_5">
            <item>
             <widget class="QPushButton" name="source_add">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>Add source from URL</string>
              </property>
@@ -343,6 +349,12 @@
            </item>
            <item>
             <widget class="QPushButton" name="source_check_updates">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>1</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>Check for updates</string>
              </property>
@@ -350,6 +362,12 @@
            </item>
            <item>
             <widget class="QPushButton" name="source_download">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>1</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>Download outdated sources</string>
              </property>
@@ -392,7 +410,7 @@
      <x>0</x>
      <y>0</y>
      <width>1463</width>
-     <height>34</height>
+     <height>19</height>
     </rect>
    </property>
   </widget>
