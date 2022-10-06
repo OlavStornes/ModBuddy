@@ -311,12 +311,12 @@ class Modbuddy():
         :param folder_path: A path representing the 'root' of the mod folder
         :type folder_path: Path
         """
-        print(folder_path)
-        folder = Path(QFileDialog.getExistingDirectory(self.ui, 'Choose subfolder', str(folder_path),
-                                                  options=QFileDialog.DontUseNativeDialog))
-        if not folder:
+        folder_choice = QFileDialog.getExistingDirectory(self.ui, 'Choose subfolder', str(folder_path),
+                                                  options=QFileDialog.DontUseNativeDialog)
+        if not folder_choice:
             return
 
+        folder = Path(folder_choice)
         if Path.exists(folder / 'fomod'):
             x = QMessageBox.question(self.ui, '', ("Fomod folder detected. Do you want to parse it as a fomod-mod?"))
             if x == QMessageBox.Yes:
