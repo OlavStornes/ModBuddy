@@ -328,19 +328,22 @@ class Modbuddy():
             if ok:
                 self.add_row_to_mods(name=text, path=Path(folder))
 
-    def add_row_to_mods(self, name: str, path: Path):
+    def add_row_to_mods(self, name: str, path: Path, modtype: str="basic"):
         """Add a given mod to the current game.
 
         :param name: unique name of the mod
         :type name: str
         :param path: A path representing the root of the folder, defaults to Path
         :type path: Path, optional
+        :param modtype: How is this mod installed?
+        :type modtype: str
         """
         self.game_setting['mods'][name] = str(path)
         for x in self.game_setting['profiles'].values():
             x.append({
                 'name': name,
-                'enabled': False
+                'enabled': False,
+                'type': modtype
             })
         self.modmodel.layoutChanged.emit()
         self.set_dirty_status(True)
