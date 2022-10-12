@@ -14,6 +14,7 @@ class SourceModdb:
     title: str
     filename: str
     foldername: str
+    folders: list[str]
     description: str
     installed: datetime
     added: datetime
@@ -45,6 +46,7 @@ class SourceModdb:
                    title = entry.get('title'),
                    filename = entry.get('filename'),
                    foldername = entry.get('foldername', ""),
+                   folders = entry.get('folders'),
                    description = entry.get('description'),
                    installed = entry.get('installed', "1900-01-01 00:00:00+00:00"),
                    added = entry.get('added'),
@@ -59,6 +61,7 @@ class SourceModdb:
                 'title': self.title,
                 'filename': self.filename,
                 'foldername': self.foldername,
+                'folders': self.folders,
                 'description': self.description,
                 'installed': str(self.installed),
                 'added': str(self.added),
