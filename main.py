@@ -496,10 +496,14 @@ class Modbuddy():
         self.write_preset_to_config()
 
     def add_source(self):
-        content, ok = QInputDialog.getMultiLineText(self.ui, "Gibe urls pls", "separate urls by newline", "")
+        content, ok = QInputDialog.getMultiLineText(
+            self.ui, "Gibe urls pls",
+            "separate urls by newline, and subfolders by semicolon",
+            "URL;folder1;folder2")
         if ok:
-            for url in content.split('\n'):
-                self.game_setting.get('sources').append({'url': url})
+            for urlgroup in content.split('\n'):
+                url, folders = urlgroup.split(';', 1)
+                self.game_setting.get('sources').append({'url': url, 'folders': folders.split(';')})
         self.sourcemodel.layoutChanged.emit()
         self.write_preset_to_config()
 
