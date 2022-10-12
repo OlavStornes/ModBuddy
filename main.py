@@ -336,7 +336,7 @@ class Modbuddy():
         :param path: A path representing the root of the folder, defaults to Path
         :type path: Path, optional
         """
-        self.game_setting['mods'][name] = path
+        self.game_setting['mods'][name] = str(path)
         for x in self.game_setting['profiles'].values():
             x.append({
                 'name': name,
