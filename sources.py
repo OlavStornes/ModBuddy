@@ -13,6 +13,7 @@ class SourceModdb:
 
     title: str
     filename: str
+    foldername: str
     description: str
     installed: datetime
     added: datetime
@@ -43,6 +44,7 @@ class SourceModdb:
         return cls(
                    title = entry.get('title'),
                    filename = entry.get('filename'),
+                   foldername = entry.get('foldername', ""),
                    description = entry.get('description'),
                    installed = entry.get('installed', "1900-01-01 00:00:00+00:00"),
                    added = entry.get('added'),
@@ -56,6 +58,7 @@ class SourceModdb:
         return {
                 'title': self.title,
                 'filename': self.filename,
+                'foldername': self.foldername,
                 'description': self.description,
                 'installed': str(self.installed),
                 'added': str(self.added),
@@ -70,6 +73,8 @@ class SourceModdb:
         site = BeautifulSoup(site_content, 'html.parser')
         self.title = site.head.title.string
         self.filename = site.find(text="Filename").parent.parent.span.text.strip()
+        if not self.foldername:
+            self.foldername = self.filename.rsplit(".", 1)[0]
         self.description = site.find(attrs={'name': 'description'})['content']
         self.added = datetime.fromisoformat(site.find(text="Added").parent.parent.time['datetime'])
 

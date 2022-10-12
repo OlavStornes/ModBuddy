@@ -472,7 +472,7 @@ class Modbuddy():
         for source in self.game_setting.get('sources'):
             x = sources.SourceModdb.from_dict(source)
             if x.installed <= x.added:
-                dl_path = Path(self.game_setting.get('default_mod_folder')) / x.filename.rsplit(".", 1)[0]
+                dl_path = Path(self.game_setting.get('default_mod_folder')) / x.foldername
                 dl_path.mkdir(exist_ok=True)
 
                 print(f"Downloading {x.download_url=} to {dl_path=}")
