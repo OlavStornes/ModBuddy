@@ -502,8 +502,11 @@ class Modbuddy():
             "URL;folder1;folder2")
         if ok:
             for urlgroup in content.split('\n'):
-                url, folders = urlgroup.split(';', 1)
-                self.game_setting.get('sources').append({'url': url, 'folders': folders.split(';')})
+                if ';' in urlgroup:
+                    url, folders = urlgroup.split(';', 1)
+                    self.game_setting.get('sources').append({'url': url, 'folders': folders.split(';')})
+                else:
+                    self.game_setting.get('sources').append({'url': url})
         self.sourcemodel.layoutChanged.emit()
         self.write_preset_to_config()
 
