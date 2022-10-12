@@ -469,6 +469,21 @@ class Modbuddy():
         self.write_preset_to_config()
         QMessageBox.information(self.ui, 'Done', 'Mod table are up to date')
 
+    def _assert_mods_is_added_from_source(self, mod: sources.SourceModdb):
+        """Assert that the subfolders from a mod exists. If they do not exist, create them as new mods."""
+        default_mod_folder = Path(self.game_setting.get('default_mod_folder'))
+        mod_settings = self.game_setting['mods']
+        all_mods = mod_settings.values()
+        for subfolder in mod.folders:
+            potentialmod = f"{default_mod_folder / mod.foldername / subfolder}"
+            print(f"{potentialmod=}")
+            if potentialmod not in all_mods:
+                print("thisSomeGOODshit.mpeg")
+                self.add_row_to_mods(name=f"{mod.foldername}/{subfolder}", path=Path(potentialmod), modtype='source')
+            else:
+                print("imgoodthx.jpeg")
+
+
     def download_sources(self):
         """Download outdated sources."""
         downloaded_something = False
@@ -485,6 +500,7 @@ class Modbuddy():
                     print(f'{downloaded_file=}')
                     patoolib.extract_archive(str(downloaded_file), outdir=str(dl_path), interactive=False)
                     x.installed = datetime.now()
+                    self._assert_mods_is_added_from_source(x)
                     source.update(x.to_dict())
                 except Exception as e:
                     raise
