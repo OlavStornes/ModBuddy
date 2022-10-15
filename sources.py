@@ -19,6 +19,7 @@ class SourceModdb:
     installed: datetime
     added: datetime
     updated: datetime
+    checksum: str
     size: str
     url: str
     download_url: str
@@ -35,6 +36,7 @@ class SourceModdb:
                    added = datetime.fromisoformat(site.find(text="Added").parent.parent.time['datetime']),
                    updated = datetime.fromisoformat(site.find(text="Updated").parent.parent.time['datetime']),
                    size = site.find(text="Size").parent.parent.span.text.strip(),
+                   checksum = site.find(text="MD5 Hash").parent.parent.span.text.strip(),
                    url = url,
                    download_url = site.find(id='downloadmirrorstoggle')['href'].strip()
                    )
@@ -52,6 +54,7 @@ class SourceModdb:
                    added = entry.get('added'),
                    updated = entry.get('updated', entry.get('added')),
                    size = entry.get('size'),
+                   checksum = entry.get('checksum'),
                    url = entry.get('url'),
                    download_url = entry.get('download_url')
                    )
@@ -67,6 +70,7 @@ class SourceModdb:
                 'added': str(self.added),
                 'updated': str(self.updated),
                 'size': self.size,
+                'checksum': self.checksum,
                 'download_url': self.download_url
                 }
 
@@ -86,6 +90,7 @@ class SourceModdb:
         except AttributeError:
             self.updated = None
         self.size = site.find(text="Size").parent.parent.span.text.strip()
+        self.checksum = site.find(text="MD5 Hash").parent.parent.span.text.strip()
         self.download_url = site.find(id='downloadmirrorstoggle')['href'].strip()
 
 
