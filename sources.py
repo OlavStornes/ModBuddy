@@ -4,6 +4,7 @@ from typing import Dict
 from datetime import datetime
 from pathlib import Path
 import requests
+import hashlib
 
 BASE_URL = "https://www.moddb.com"
 
@@ -93,6 +94,15 @@ class SourceModdb:
         self.checksum = site.find(text="MD5 Hash").parent.parent.span.text.strip()
         self.download_url = site.find(id='downloadmirrorstoggle')['href'].strip()
 
+    def check_if_file_exists(self, downloaded_file: Path):
+        if downloaded_file.exists and self.checksum:
+            # check if the file is actually downloaded
+            with open(downloaded_file, "rb") as fp:
+                file_bytes = fp.read()
+                readable_hash = hashlib.md5(file_bytes).hexdigest()
+                if readable_hash == self.checksum:
+                    return True
+        return False
 
     def get_download_url(self) -> str:
         """Retrieve the actual download link."""

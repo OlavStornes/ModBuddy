@@ -499,17 +499,9 @@ class Modbuddy():
                 dl_path = Path(self.game_setting.get('default_mod_folder')) / x.foldername
                 dl_path.mkdir(exist_ok=True)
                 downloaded_file = dl_path / x.filename
-                if downloaded_file.exists and x.checksum:
-                    # check if the file is actually downloaded
-                    with open(downloaded_file, "rb") as fp:
-                        file_bytes = fp.read()
-                        readable_hash = hashlib.md5(file_bytes).hexdigest()
-                        if readable_hash == x.checksum:
-                            print(f"{i+1}/{total_length} - latest file already exists")
-                            continue
-
-                print(f"Downloading {x.download_url=} to {dl_path=}")
-                x.download_file(dl_path)
+                if not x.check_if_file_exists(downloaded_file):
+                    print(f"Downloading {x.download_url=} to {dl_path=}")
+                    x.download_file(dl_path)
                 try:
                     print(f'{i+1}/{total_length} - {downloaded_file=}')
                     patoolib.extract_archive(str(downloaded_file), outdir=str(dl_path), interactive=False)
