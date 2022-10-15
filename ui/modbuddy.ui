@@ -348,6 +348,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QPushButton" name="source_export">
+             <property name="text">
+              <string>Export sources</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QPushButton" name="source_check_updates">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">

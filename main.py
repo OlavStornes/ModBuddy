@@ -59,6 +59,7 @@ class Modbuddy():
 
         # - Sources
         self.ui.source_add.clicked.connect(self.add_source)
+        self.ui.source_export.clicked.connect(self.export_source)
         self.ui.source_check_updates.clicked.connect(self.update_sources)
         self.ui.source_download.clicked.connect(self.download_sources)
 
@@ -528,6 +529,18 @@ class Modbuddy():
                     self.game_setting.get('sources').append({'url': url})
         self.sourcemodel.layoutChanged.emit()
         self.write_preset_to_config()
+
+    def export_source(self):
+        """Export current configuration as a text file"""
+        lines = []
+        for x in self.game_setting.get('sources'):
+            folder_part = ""
+            if x['folders']:
+                folder_part = ";" + ";".join(x['folders'])
+            lines.append(f"{x['url']}{folder_part}")
+        export_box = QMessageBox(self.ui, '1', '2')
+        export_box.setDetailedText("\n".join(lines))
+        export_box.exec()
 
     def clean_target_modfolder(self):
         target_modfolder = Path(self.game_setting['game_mod_folder'])
