@@ -342,7 +342,7 @@ class Modbuddy():
         for x in self.game_setting['profiles'].values():
             x.append({
                 'name': name,
-                'enabled': False,
+                'enabled': True,
                 'type': modtype
             })
         self.modmodel.layoutChanged.emit()
@@ -360,7 +360,7 @@ class Modbuddy():
         for x in self.game_setting['profiles'].values():
             x.append({
                 'name': name,
-                'enabled': False,
+                'enabled': True,
                 'type': 'fomod',
                 'options': fomod_results
             })
