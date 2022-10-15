@@ -463,10 +463,12 @@ class Modbuddy():
         x = QMessageBox.question(self.ui, '', ("Mod buddy can freeze a bit while this runs. Do you want to proceed?"))
         if x != QMessageBox.Yes:
             return
-        for source in self.game_setting.get('sources'):
+        total_length = len(self.game_setting.get('sources'))
+        for i, source in enumerate(self.game_setting.get('sources')):
             test = sources.SourceModdb.from_dict(source)
             test.update()
             source.update(test.to_dict())
+            print(f"{i+1}/{total_length} - Updated metadata for {test.title}")
         self.sourcemodel.layoutChanged.emit()
         self.write_preset_to_config()
         QMessageBox.information(self.ui, 'Done', 'Mod table are up to date')
@@ -489,7 +491,8 @@ class Modbuddy():
     def download_sources(self):
         """Download outdated sources."""
         downloaded_something = False
-        for source in self.game_setting.get('sources'):
+        total_length = len(self.game_setting.get('sources'))
+        for i, source in enumerate(self.game_setting.get('sources')):
             x = sources.SourceModdb.from_dict(source)
             if x.installed <= x.added:
                 dl_path = Path(self.game_setting.get('default_mod_folder')) / x.foldername
@@ -499,17 +502,17 @@ class Modbuddy():
                 x.download_file(dl_path)
                 downloaded_file = dl_path / x.filename
                 try:
-                    print(f'{downloaded_file=}')
+                    print(f'{i+1}/{total_length} - {downloaded_file=}')
                     patoolib.extract_archive(str(downloaded_file), outdir=str(dl_path), interactive=False)
                     x.installed = datetime.now()
                     self._assert_mods_is_added_from_source(x)
                     source.update(x.to_dict())
                 except Exception as e:
                     raise
-                print("finished")
+                print(f"{i+1}/{total_length} - finished")
                 downloaded_something = True
             else:
-                print("No need to download")
+                print(f"{i+1}/{total_length} - No need to download")
         if downloaded_something:
             QMessageBox.information(self.ui, 'Done', 'Sources are downloaded')
         else:
