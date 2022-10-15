@@ -241,6 +241,7 @@ class Modbuddy():
                     "name": BASE_CONTENT_NAME
                 }]
             },
+            'sources' : [],
             'mods': {
                 BASE_CONTENT_NAME: str(initial_mod_content_folder.resolve())
             }
