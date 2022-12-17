@@ -566,15 +566,20 @@ everything inside this folder?\n{del_path_target}")
         mod_list = self.game_setting['mods']
         enabled_mods = ',\n'.join([x.get('name') for x in profile if x.get('enabled')])
         target_mod_folder = Path(self.game_setting["game_mod_folder"])
-        
-        x = QMessageBox.question(self.ui, '', (
-            'This will delete all content inside:\n\n'
+
+        msgBox = QMessageBox()
+        msgBox.setText("Apply mods")
+        msgBox.setInformativeText((
+            'This will delete all content inside:\n'
             f'{target_mod_folder.resolve()}\n'
-            'and commit these mods afterwards:\n\n'
-            f'{enabled_mods}\n\n'
-            f'Are you sure about this?'
+            'and start to apply mods:\n\n'
+            'Do you want to proceed?'
         ))
-        if x == QMessageBox.Yes:
+        msgBox.setDetailedText(enabled_mods)
+        msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+        msgBox.setDefaultButton(QMessageBox.Yes)
+        ret = msgBox.exec()
+        if ret == QMessageBox.Yes:
             self.write_preset_to_config()
             try:
                 self.recursive_rmdir(target_mod_folder.resolve())
