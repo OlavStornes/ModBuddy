@@ -72,6 +72,7 @@ class SourceModdb:
                 'updated': str(self.updated),
                 'size': self.size,
                 'checksum': self.checksum,
+                'url': self.url,
                 'download_url': self.download_url
                 }
 
