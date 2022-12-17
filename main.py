@@ -384,7 +384,7 @@ class Modbuddy():
             self._move_row(row, row+1)
         except IndexError:
             pass
-        
+
     def _move_row(self, index_a: int, index_b: int):
         """Switch an entry between two rows in the mod list."""
         game_profile = self.game_setting['profiles'].get(self.get_current_profile())
@@ -487,7 +487,6 @@ class Modbuddy():
                 self.add_row_to_mods(name=f"{mod.foldername}/{subfolder}", path=Path(potentialmod), modtype='source')
             else:
                 print("imgoodthx.jpeg")
-
 
     def download_sources(self):
         """Download outdated sources."""
