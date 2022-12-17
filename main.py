@@ -529,9 +529,11 @@ class Modbuddy():
             for urlgroup in content.split('\n'):
                 if ';' in urlgroup:
                     url, folders = urlgroup.split(';', 1)
-                    self.game_setting.get('sources').append({'url': url, 'folders': folders.split(';')})
+                    tmp_source = sources.SourceModdb.from_dict({'url': url, 'folders': folders.split(';')})
                 else:
-                    self.game_setting.get('sources').append({'url': url})
+                    tmp_source = sources.SourceModdb.from_dict({'url': url})
+                tmp_source.update()
+                self.game_setting.get('sources').append(tmp_source.to_dict())
         self.sourcemodel.layoutChanged.emit()
         self.write_preset_to_config()
 
