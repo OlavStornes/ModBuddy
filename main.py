@@ -178,6 +178,7 @@ class Modbuddy():
         """
         self.current_profile = self.game_setting['profiles'].get(target_profile)
         self.init_tablewidget(target_profile)
+        self.init_sourcewidget(target_profile)
 
     def load_current_profile(self):
         """Initialize the current preset (Chosen in GUI)."""
