@@ -9,7 +9,7 @@ import hashlib
 BASE_URL = "https://www.moddb.com"
 
 @dataclass
-class SourceModdb:
+class SourceBase:
     """Something."""
 
     title: str
@@ -24,6 +24,52 @@ class SourceModdb:
     size: str
     url: str
     download_url: str
+
+    @classmethod
+    def from_url(cls, url: str):
+        raise NotImplementedError()
+
+    @classmethod
+    def from_dict(cls, entry: Dict[str, str]):
+        """Initialize from a dictionary."""
+        raise NotImplementedError()
+
+    def to_dict(self) -> Dict[str, str]:
+        raise NotImplementedError()
+
+    def update(self):
+        raise NotImplementedError()
+
+    def check_if_file_exists(self, downloaded_file: Path):
+        try:
+            if self.checksum:
+                # check if the file is actually downloaded
+                with open(downloaded_file, "rb") as fp:
+                    file_bytes = fp.read()
+                    readable_hash = hashlib.md5(file_bytes).hexdigest()
+                    if readable_hash == self.checksum:
+                        return True
+        except FileNotFoundError:
+            return False
+
+    def get_download_url(self) -> str:
+        raise NotImplementedError()
+
+    def download_file(self, write_folder: Path):
+        """Download a file."""
+        write_path = write_folder / self.filename
+
+        r = requests.get(self.get_download_url())
+        with open(write_path, 'wb') as fp:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    fp.write(chunk)
+        return
+
+
+@dataclass
+class SourceModdb(SourceBase):
+    """Something."""
 
     @classmethod
     def from_url(cls, url: str):
@@ -95,18 +141,6 @@ class SourceModdb:
         self.checksum = site.find(text="MD5 Hash").parent.parent.span.text.strip()
         self.download_url = site.find(id='downloadmirrorstoggle')['href'].strip()
 
-    def check_if_file_exists(self, downloaded_file: Path):
-        try:
-            if self.checksum:
-                # check if the file is actually downloaded
-                with open(downloaded_file, "rb") as fp:
-                    file_bytes = fp.read()
-                    readable_hash = hashlib.md5(file_bytes).hexdigest()
-                    if readable_hash == self.checksum:
-                        return True
-        except FileNotFoundError:
-            return False
-
     def get_download_url(self) -> str:
         """Retrieve the actual download link."""
         download = BASE_URL + str(self.download_url)
@@ -115,15 +149,3 @@ class SourceModdb:
         target_url = BASE_URL + str(target_href)
         print(f'Got {target_url=}')
         return target_url
-    
-    def download_file(self, write_folder: Path):
-        """Download a file."""
-        write_path = write_folder / self.filename
-        
-        r = requests.get(self.get_download_url())
-        with open(write_path, 'wb') as fp:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    fp.write(chunk)
-        return
-            
