@@ -6,8 +6,6 @@ from pathlib import Path
 import requests
 import hashlib
 
-BASE_URL = "https://www.moddb.com"
-
 
 @dataclass
 class SourceBase:
@@ -71,6 +69,7 @@ class SourceBase:
 @dataclass
 class SourceModdb(SourceBase):
     """Something."""
+    BASE_URL = "https://www.moddb.com"
 
     @classmethod
     def from_url(cls, url: str):
@@ -152,9 +151,9 @@ class SourceModdb(SourceBase):
 
     def get_download_url(self) -> str:
         """Retrieve the actual download link."""
-        download = BASE_URL + str(self.download_url)
+        download = self.BASE_URL + str(self.download_url)
         mirror_site = BeautifulSoup(requests.get(download).text, "html.parser")
         target_href = mirror_site.body.p.a["href"]
-        target_url = BASE_URL + str(target_href)
+        target_url = self.BASE_URL + str(target_href)
         print(f"Got {target_url=}")
         return target_url
