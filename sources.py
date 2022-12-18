@@ -72,10 +72,16 @@ class SourceModdb(SourceBase):
     BASE_URL = "https://www.moddb.com"
 
     @classmethod
-    def from_url(cls, url: str):
+    def from_url(cls, url: str, folders: list[str] = None):
         """Initialize from url."""
         site_content = requests.get(url).text
         site = BeautifulSoup(site_content, "html.parser")
+        try:
+            updated = datetime.fromisoformat(
+                site.find(text="Updated").parent.parent.time["datetime"]
+            )
+        except AttributeError:
+            updated = None
         return cls(
             title=site.head.title.string,
             filename=site.find(text="Filename").parent.parent.span.text.strip(),
@@ -83,13 +89,14 @@ class SourceModdb(SourceBase):
             added=datetime.fromisoformat(
                 site.find(text="Added").parent.parent.time["datetime"]
             ),
-            updated=datetime.fromisoformat(
-                site.find(text="Updated").parent.parent.time["datetime"]
-            ),
+            installed="1900-01-01 00:00:00+00:00",
+            updated=updated,
             size=site.find(text="Size").parent.parent.span.text.strip(),
             checksum=site.find(text="MD5 Hash").parent.parent.span.text.strip(),
             url=url,
             download_url=site.find(id="downloadmirrorstoggle")["href"].strip(),
+            foldername=site.get("foldername", ""),
+            folders=folders
         )
 
     @classmethod
