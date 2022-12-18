@@ -343,8 +343,8 @@ class Modbuddy():
         :type modtype: str
         """
         self.game_setting['mods'][name] = str(path)
-        for x in self.game_setting['profiles'].values():
-            x.append({
+        for mod_profile in self.game_setting['profiles'].values():
+            mod_profile.append({
                 'name': name,
                 'enabled': True,
                 'type': modtype
@@ -361,8 +361,8 @@ class Modbuddy():
         :type path: Path, optional
         """
         self.game_setting['mods'][name] = str(path)
-        for x in self.game_setting['profiles'].values():
-            x.append({
+        for mod_profile in self.game_setting['profiles'].values():
+            mod_profile.append({
                 'name': name,
                 'enabled': True,
                 'type': 'fomod',
@@ -495,27 +495,27 @@ class Modbuddy():
         downloaded_something = False
         total_length = len(self.game_setting.get('sources'))
         for i, source in enumerate(self.game_setting.get('sources')):
-            x = sources.get_class_classifier(source["url"]).from_dict(source)
-            if x.installed <= x.added:
-                dl_path = Path(self.game_setting.get('default_mod_folder')) / x.foldername
+            source_object = sources.get_class_classifier(source["url"]).from_dict(source)
+            if source_object.installed <= source_object.added:
+                dl_path = Path(self.game_setting.get('default_mod_folder')) / source_object.foldername
                 dl_path.mkdir(exist_ok=True)
-                downloaded_file = dl_path / x.filename
-                if not x.check_if_file_exists(downloaded_file):
-                    print(f"Downloading {x.download_url=} to {dl_path=}")
-                    x.download_file(dl_path)
+                downloaded_file = dl_path / source_object.filename
+                if not source_object.check_if_file_exists(downloaded_file):
+                    print(f"Downloading {source_object.download_url=} to {dl_path=}")
+                    source_object.download_file(dl_path)
                 try:
                     print(f'{i+1}/{total_length} - {downloaded_file=}')
                     patoolib.extract_archive(str(downloaded_file), outdir=str(dl_path), interactive=False)
-                    if isinstance(x, sources.SourceGitHub):
+                    if isinstance(source_object, sources.SourceGitHub):
                         # Folders from github is laid out as "Name-Project-SHA"
                         # This is a neat workaroud to avoid renaming mods everytime there in an update
-                        git_downloaded_root = [y for y in dl_path.iterdir() if y.is_dir()]
+                        git_downloaded_root = [p for p in dl_path.iterdir() if p.is_dir()]
                         if len(git_downloaded_root) == 1:
                             git_folder = git_downloaded_root[0]
-                            git_folder.rename(dl_path / x.foldername)
-                    x.installed = datetime.now()
-                    self._assert_mods_is_added_from_source(x)
-                    source.update(x.to_dict())
+                            git_folder.rename(dl_path / source_object.foldername)
+                    source_object.installed = datetime.now()
+                    self._assert_mods_is_added_from_source(source_object)
+                    source.update(source_object.to_dict())
                 except Exception as e:
                     raise
                 print(f"{i+1}/{total_length} - finished")
@@ -549,11 +549,11 @@ class Modbuddy():
     def export_source(self):
         """Export current configuration as a text file"""
         lines = []
-        for x in self.game_setting.get('sources'):
+        for src in self.game_setting.get('sources'):
             folder_part = ""
-            if x['folders']:
-                folder_part = ";" + ";".join(x['folders'])
-            lines.append(f"{x['url']}{folder_part}")
+            if src['folders']:
+                folder_part = ";" + ";".join(src['folders'])
+            lines.append(f"{src['url']}{folder_part}")
         export_box = QMessageBox(self.ui, '1', '2')
         export_box.setDetailedText("\n".join(lines))
         export_box.exec()
@@ -564,11 +564,11 @@ class Modbuddy():
             QMessageBox.warning(self.ui, '', 'No target modfolder found')
         else:
             del_path_target = target_modfolder.resolve()
-            x = QMessageBox.question(
+            messagebox_answer = QMessageBox.question(
                 self.ui, 'DELETING FOLDER', f"Are you sure you want to delete \
 everything inside this folder?\n{del_path_target}")
 
-            if x == QMessageBox.Yes:
+            if messagebox_answer == QMessageBox.Yes:
                 self.recursive_rmdir(del_path_target)
                 QMessageBox.information(self.ui, 'Done', 'Mods are cleaned!')
 
@@ -602,7 +602,6 @@ everything inside this folder?\n{del_path_target}")
             else:
                 QMessageBox.information(self.ui, 'Done', 'Mods are loaded!')
                 self.set_dirty_status(False)
-
 
     def begin_fomod_parsing(self, base_folder: Path):
         """Begin parsing of FOMOD-modpacks."""
