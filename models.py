@@ -126,25 +126,6 @@ class SourceModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             return row.get(self.headers[index.column()])
 
-    # def setData(self, index: QtCore.QModelIndex, value, role: int) -> bool:
-    #     """Overridden funciton to help with checkboxes."""
-    #     cur_profile = self.game_setting['profiles'][self.profile]
-    #     assert type(cur_profile) is list
-    #     if role == Qt.CheckStateRole and self.headers[index.column()] == 'enabled':
-    #         if value == Qt.Checked:
-    #             cur_profile[index.row()]['enabled'] = True
-    #         else:
-    #             cur_profile[index.row()]['enabled'] = False
-    #     self.layoutChanged.emit()
-    #     return super().setData(index, value, role=role)
-
-    # def flags(self, index: QtCore.QModelIndex):
-    #     """Overridden function to support checkboxes"""
-    #     if index.column() == 0:
-    #         return Qt.ItemIsEnabled | Qt.ItemIsUserCheckable | Qt.ItemIsSelectable
-    #     else:
-    #         return super().flags(index)
-
     def rowCount(self, index=None) -> int:
         assert type(self.sources) is list
         return len(self.sources)
