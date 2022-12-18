@@ -7,6 +7,7 @@ import requests
 import hashlib
 import json
 
+
 @dataclass
 class SourceBase:
     """Something."""
@@ -69,6 +70,7 @@ class SourceBase:
 @dataclass
 class SourceModdb(SourceBase):
     """Something."""
+
     BASE_URL = "https://www.moddb.com"
 
     @classmethod
@@ -96,7 +98,7 @@ class SourceModdb(SourceBase):
             url=url,
             download_url=site.find(id="downloadmirrorstoggle")["href"].strip(),
             foldername=site.get("foldername", ""),
-            folders=folders
+            folders=folders,
         )
 
     @classmethod
@@ -165,9 +167,11 @@ class SourceModdb(SourceBase):
         print(f"Got {target_url=}")
         return target_url
 
+
 @dataclass
 class SourceGitHub(SourceBase):
     """Class for handling mods from github."""
+
     BASE_URL = "https://www.github.com"
     BASE_API_URL = "https://api.github.com"
     html_url: str
@@ -176,11 +180,10 @@ class SourceGitHub(SourceBase):
     def parse_api_url(cls, url: str):
         if cls.BASE_API_URL in url:
             return url
-        user = url.split('/')[-2]
-        project = url.split('/')[-1]
+        user = url.split("/")[-2]
+        project = url.split("/")[-1]
         testing = f"https://api.github.com/repos/{user}/{project}"
         return testing
-
 
     @classmethod
     def from_url(cls, url: str, folders: list[str] = None):
@@ -194,12 +197,8 @@ class SourceGitHub(SourceBase):
             title=x.get("name"),
             filename=f"{x.get('name')}.zip",
             description=x.get("description"),
-            added=datetime.fromisoformat(
-                x.get("created_at")
-            ),
-            updated=datetime.fromisoformat(
-                x.get("pushed_at")
-            ),
+            added=datetime.fromisoformat(x.get("created_at")),
+            updated=datetime.fromisoformat(x.get("pushed_at")),
             size=x.get("size"),
             checksum="",
             html_url=x.get("html_url"),
@@ -207,31 +206,27 @@ class SourceGitHub(SourceBase):
             download_url=f"{api_url}/zipball",
             foldername=x.get("name"),
             folders=folders,
-            installed="1900-01-01 00:00:00+00:00"
+            installed="1900-01-01 00:00:00+00:00",
         )
 
     def update(self):
         """Update object with information from source."""
         content = requests.get(self.url)
         x = json.loads(content)
-        self.title = x.get("name"),
+        self.title = (x.get("name"),)
         self.filename = x.get("filename")
         if not self.foldername:
             self.foldername = self.filename.rsplit(".", 1)[0]
         self.description = x.get("description")
-        self.added = datetime.fromisoformat(
-            x.get("created_at")
-        )
+        self.added = datetime.fromisoformat(x.get("created_at"))
 
         try:
-            self.updated = datetime.fromisoformat(
-                x.get("update_at")
-            )
+            self.updated = datetime.fromisoformat(x.get("update_at"))
         except AttributeError:
             self.updated = None
         self.size = x.get("size")
         self.checksum = ""
-        self.download_url = f"{x.get('url')}/zipball",
+        self.download_url = (f"{x.get('url')}/zipball",)
 
     def get_download_url(self) -> str:
         """Retrieve the actual download link."""
