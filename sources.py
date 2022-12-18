@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 import requests
 import hashlib
-
+import json
 
 @dataclass
 class SourceBase:
@@ -164,3 +164,75 @@ class SourceModdb(SourceBase):
         target_url = self.BASE_URL + str(target_href)
         print(f"Got {target_url=}")
         return target_url
+
+@dataclass
+class SourceGitHub(SourceBase):
+    """Class for handling mods from github."""
+    BASE_URL = "https://www.github.com"
+    BASE_API_URL = "https://api.github.com"
+    html_url: str
+
+    @classmethod
+    def parse_api_url(cls, url: str):
+        if cls.BASE_API_URL in url:
+            return url
+        user = url.split('/')[-2]
+        project = url.split('/')[-1]
+        testing = f"https://api.github.com/repos/{user}/{project}"
+        return testing
+
+
+    @classmethod
+    def from_url(cls, url: str, folders: list[str] = None):
+
+        """Initialize from url."""
+        api_url = cls.parse_api_url(url)
+        content = requests.get(api_url).text
+        x = json.loads(content)
+
+        return cls(
+            title=x.get("name"),
+            filename=f"{x.get('name')}.zip",
+            description=x.get("description"),
+            added=datetime.fromisoformat(
+                x.get("created_at")
+            ),
+            updated=datetime.fromisoformat(
+                x.get("pushed_at")
+            ),
+            size=x.get("size"),
+            checksum="",
+            html_url=x.get("html_url"),
+            url=x.get("url"),
+            download_url=f"{api_url}/zipball",
+            foldername=x.get("name"),
+            folders=folders,
+            installed="1900-01-01 00:00:00+00:00"
+        )
+
+    def update(self):
+        """Update object with information from source."""
+        content = requests.get(self.url)
+        x = json.loads(content)
+        self.title = x.get("name"),
+        self.filename = x.get("filename")
+        if not self.foldername:
+            self.foldername = self.filename.rsplit(".", 1)[0]
+        self.description = x.get("description")
+        self.added = datetime.fromisoformat(
+            x.get("created_at")
+        )
+
+        try:
+            self.updated = datetime.fromisoformat(
+                x.get("update_at")
+            )
+        except AttributeError:
+            self.updated = None
+        self.size = x.get("size")
+        self.checksum = ""
+        self.download_url = f"{x.get('url')}/zipball",
+
+    def get_download_url(self) -> str:
+        """Retrieve the actual download link."""
+        return self.download_url
