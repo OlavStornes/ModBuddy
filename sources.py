@@ -35,7 +35,20 @@ class SourceBase:
         raise NotImplementedError()
 
     def to_dict(self) -> Dict[str, str]:
-        raise NotImplementedError()
+        return {
+            "title": self.title,
+            "filename": self.filename,
+            "foldername": self.foldername,
+            "folders": self.folders,
+            "description": self.description,
+            "installed": str(self.installed),
+            "added": str(self.added),
+            "updated": str(self.updated),
+            "size": self.size,
+            "checksum": self.checksum,
+            "url": self.url,
+            "download_url": self.download_url,
+        }
 
     def update(self):
         raise NotImplementedError()
@@ -118,22 +131,6 @@ class SourceModdb(SourceBase):
             url=entry.get("url"),
             download_url=entry.get("download_url"),
         )
-
-    def to_dict(self) -> Dict[str, str]:
-        return {
-            "title": self.title,
-            "filename": self.filename,
-            "foldername": self.foldername,
-            "folders": self.folders,
-            "description": self.description,
-            "installed": str(self.installed),
-            "added": str(self.added),
-            "updated": str(self.updated),
-            "size": self.size,
-            "checksum": self.checksum,
-            "url": self.url,
-            "download_url": self.download_url,
-        }
 
     def update(self):
         """Update object with information from source."""
