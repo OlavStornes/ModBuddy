@@ -226,7 +226,7 @@ class SourceGitHub(SourceBase):
 
     def update(self):
         """Update object with information from source."""
-        content = requests.get(self.url)
+        content = requests.get(self.url).text
         x = json.loads(content)
         self.title = x.get("name")
         if not self.foldername:
