@@ -506,6 +506,13 @@ class Modbuddy():
                 try:
                     print(f'{i+1}/{total_length} - {downloaded_file=}')
                     patoolib.extract_archive(str(downloaded_file), outdir=str(dl_path), interactive=False)
+                    if isinstance(x, sources.SourceGitHub):
+                        # Folders from github is laid out as "Name-Project-SHA"
+                        # This is a neat workaroud to avoid renaming mods everytime there in an update
+                        git_downloaded_root = [y for y in dl_path.iterdir() if y.is_dir()]
+                        if len(git_downloaded_root) == 1:
+                            git_folder = git_downloaded_root[0]
+                            git_folder.rename(dl_path / x.foldername)
                     x.installed = datetime.now()
                     self._assert_mods_is_added_from_source(x)
                     source.update(x.to_dict())
