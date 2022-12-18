@@ -192,11 +192,11 @@ class SourceGitHub(SourceBase):
 
         return cls(
             title=x.get("name"),
-            filename=f"{x.get('name')}.zip",
+            filename=f"{x.get('name')}_git.zip",
             description=x.get("description"),
             added=datetime.fromisoformat(x.get("created_at")),
             updated=datetime.fromisoformat(x.get("pushed_at")),
-            size=x.get("size"),
+            size=f"{x.get('size')}kb",
             checksum="",
             html_url=x.get("html_url"),
             url=x.get("url"),
@@ -228,20 +228,19 @@ class SourceGitHub(SourceBase):
         """Update object with information from source."""
         content = requests.get(self.url)
         x = json.loads(content)
-        self.title = (x.get("name"),)
-        self.filename = x.get("filename")
+        self.title = x.get("name")
         if not self.foldername:
             self.foldername = self.filename.rsplit(".", 1)[0]
         self.description = x.get("description")
         self.added = datetime.fromisoformat(x.get("created_at"))
 
         try:
-            self.updated = datetime.fromisoformat(x.get("update_at"))
+            self.updated = datetime.fromisoformat(x.get("pushed_at"))
         except AttributeError:
             self.updated = None
         self.size = x.get("size")
         self.checksum = ""
-        self.download_url = (f"{x.get('url')}/zipball",)
+        self.download_url = f"{x.get('url')}/zipball"
 
     def get_download_url(self) -> str:
         """Retrieve the actual download link."""
