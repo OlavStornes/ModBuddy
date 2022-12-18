@@ -467,7 +467,8 @@ class Modbuddy():
             return
         total_length = len(self.game_setting.get('sources'))
         for i, source in enumerate(self.game_setting.get('sources')):
-            test = sources.SourceModdb.from_dict(source)
+            sourceclass = sources.get_class_classifier(source['url'])
+            test = sourceclass.from_dict(source)
             test.update()
             source.update(test.to_dict())
             print(f"{i+1}/{total_length} - Updated metadata for {test.title}")
@@ -494,7 +495,7 @@ class Modbuddy():
         downloaded_something = False
         total_length = len(self.game_setting.get('sources'))
         for i, source in enumerate(self.game_setting.get('sources')):
-            x = sources.SourceModdb.from_dict(source)
+            x = sources.get_class_classifier(source["url"]).from_dict(source)
             if x.installed <= x.added:
                 dl_path = Path(self.game_setting.get('default_mod_folder')) / x.foldername
                 dl_path.mkdir(exist_ok=True)
@@ -529,9 +530,11 @@ class Modbuddy():
             for urlgroup in content.split('\n'):
                 if ';' in urlgroup:
                     url, folders = urlgroup.split(';', 1)
-                    tmp_source = sources.SourceModdb.from_url(url, folders.split(';'))
+                    sourceclass = sources.get_class_classifier(url)
+                    tmp_source = sourceclass.from_url(url, folders.split(';'))
                 else:
-                    tmp_source = sources.SourceModdb.from_url(urlgroup)
+                    sourceclass = sources.get_class_classifier(urlgroup)
+                    tmp_source = sourceclass.from_url(urlgroup)
                 self.game_setting.get('sources').append(tmp_source.to_dict())
         self.sourcemodel.layoutChanged.emit()
         self.write_preset_to_config()

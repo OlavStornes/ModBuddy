@@ -231,3 +231,10 @@ class SourceGitHub(SourceBase):
     def get_download_url(self) -> str:
         """Retrieve the actual download link."""
         return self.download_url
+
+
+def get_class_classifier(url: str) -> SourceBase:
+    if "moddb.com" in url:
+        return SourceModdb
+    if "github.com" in url:
+        return SourceGitHub
