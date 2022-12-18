@@ -206,6 +206,24 @@ class SourceGitHub(SourceBase):
             installed="1900-01-01 00:00:00+00:00",
         )
 
+    @classmethod
+    def from_dict(cls, entry: Dict[str, str]):
+        return cls(
+            title=entry.get("title"),
+            filename=entry.get("filename"),
+            foldername=entry.get("foldername", ""),
+            folders=entry.get("folders"),
+            description=entry.get("description"),
+            installed=entry.get("installed", "1900-01-01 00:00:00+00:00"),
+            added=entry.get("added"),
+            updated=entry.get("updated", entry.get("added")),
+            size=entry.get("size"),
+            checksum=entry.get("checksum"),
+            url=entry.get("url"),
+            html_url=entry.get("html_url"),
+            download_url=entry.get("download_url"),
+        )
+
     def update(self):
         """Update object with information from source."""
         content = requests.get(self.url)
