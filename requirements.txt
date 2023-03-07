@@ -1,2 +1,13 @@
-PySide6
+beautifulsoup4
+bs4
+certifi
+charset-normalizer
+idna
 patool
+PySide6
+PySide6-Addons
+PySide6-Essentials
+requests
+shiboken6
+soupsieve
+urllib3
