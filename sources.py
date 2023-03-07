@@ -117,6 +117,10 @@ class SourceModdb(SourceBase):
     @classmethod
     def from_dict(cls, entry: Dict[str, str]):
         """Initialize from a dictionary."""
+        try:
+            updated = datetime.fromisoformat(entry.get("updated"))
+        except ValueError:
+            updated = datetime.fromisoformat(entry.get("added"))
 
         foldername = entry.get("foldername")
         if not foldername:
@@ -127,9 +131,9 @@ class SourceModdb(SourceBase):
             foldername=foldername,
             folders=entry.get("folders"),
             description=entry.get("description"),
-            installed=entry.get("installed", "1900-01-01 00:00:00+00:00"),
-            added=entry.get("added"),
-            updated=entry.get("updated", entry.get("added")),
+            installed=datetime.fromisoformat(entry.get("installed", "1900-01-01 00:00:00+00:00")),
+            added=datetime.fromisoformat(entry.get("added")),
+            updated=updated,
             size=entry.get("size"),
             checksum=entry.get("checksum"),
             url=entry.get("url"),

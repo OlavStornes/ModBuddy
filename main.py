@@ -545,7 +545,12 @@ class Modbuddy:
             source_object = sources.get_class_classifier(source["url"]).from_dict(
                 source
             )
-            if source_object.installed <= source_object.added:
+            print(f"{source_object.title} {source_object.installed} - {source_object.updated}")
+            if source_object.updated:
+                last_updated = max(source_object.added, source_object.updated)
+            else:
+                last_updated = source_object.added
+            if source_object.installed.timestamp() <= last_updated.timestamp():
                 dl_path = (
                     Path(self.game_setting.get("default_mod_folder"))
                     / source_object.foldername
