@@ -3,6 +3,7 @@ import sys
 import hashlib
 from os import path as ospath
 from fomod import FomodParser
+from time import sleep
 from datetime import datetime
 import models
 from pathlib import Path
@@ -602,14 +603,20 @@ class Modbuddy:
         )
         if ok:
             for urlgroup in content.split("\n"):
-                if ";" in urlgroup:
-                    url, folders = urlgroup.split(";", 1)
-                    sourceclass = sources.get_class_classifier(url)
-                    tmp_source = sourceclass.from_url(url, folders.split(";"))
-                else:
-                    sourceclass = sources.get_class_classifier(urlgroup)
-                    tmp_source = sourceclass.from_url(urlgroup)
-                self.game_setting.get("sources").append(tmp_source.to_dict())
+                try:
+                    if ";" in urlgroup:
+                        url, folders = urlgroup.split(";", 1)
+                        sourceclass = sources.get_class_classifier(url)
+                        tmp_source = sourceclass.from_url(url, folders.split(";"))
+                        self.game_setting.get("sources").append(tmp_source.to_dict())
+                    else:
+                        sourceclass = sources.get_class_classifier(urlgroup)
+                        tmp_source = sourceclass.from_url(urlgroup)
+                        self.game_setting.get("sources").append(tmp_source.to_dict())
+                    print(f"Added {tmp_source.title}")
+                    sleep(2)
+                except AttributeError:
+                    print(f"Something went wrong on url {urlgroup}")
         self.sourcemodel.layoutChanged.emit()
         self.write_preset_to_config()
 
