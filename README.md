@@ -62,6 +62,24 @@ You can add mods from two different ways:
 - Add mod from archive: Extract target archive to a folder inside Mod buddy, where you then can choose the folder inside
 - Add mod from folder: Choose a folder which contains a mod 
 	- This is intended for mods that have multiple patches (such as the texture pack mentioned above) or when the user didn't use the above mentioned button.
+- Add mod from source: 
+
+### Sources
+![Sources up](docs/img/sources_ui.png)
+
+Sources is a more complex package handler, where you can organize your mod sources.
+A mod registered as a source will ease tasks such as:
+- updating
+- applying patches/multiple instances pr. mod
+- bulk downloads
+- setup replication
+- modpack creation
+
+A source is given with the pattern `URL[;subfolder]`, where one line correlates with one source.
+
+![Sources example](docs/img/sources_usecase.png)
+
+At the moment it supports links from Moddb and Github
 
 
 ## Disclaimer

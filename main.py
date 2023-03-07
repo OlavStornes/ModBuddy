@@ -1,31 +1,47 @@
 #!/usr/bin/env python3
 import sys
+import hashlib
 from os import path as ospath
+from fomod import FomodParser
+from time import sleep
+from datetime import datetime
 import models
 from pathlib import Path
-from PySide6.QtWidgets import QFileDialog, QInputDialog, QLineEdit, QMessageBox, QMainWindow, QFileSystemModel, QApplication
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QInputDialog,
+    QLineEdit,
+    QMessageBox,
+    QMainWindow,
+    QFileSystemModel,
+    QApplication,
+)
 from PySide6.QtCore import QFile, QIODevice, QCoreApplication, Qt
 from PySide6.QtUiTools import QUiLoader
-import shutil
+import patoolib
 import modpack
 import json
+import sources
 
 PROJECT_PATH = Path(ospath.dirname(sys.argv[0])).resolve()
-INPUT_FOLDER = PROJECT_PATH / Path('input')
-SETTINGS_NAME = PROJECT_PATH / 'settings.json'
-GAME_PRESET_FOLDER = PROJECT_PATH / 'games'
-PRESET_FILE_NAME = 'game_setting.json'
-MAIN_UI_PATH = PROJECT_PATH / 'ui' / 'modbuddy.ui'
+INPUT_FOLDER = PROJECT_PATH / Path("input")
+SETTINGS_NAME = PROJECT_PATH / "settings.json"
+GAME_PRESET_FOLDER = PROJECT_PATH / "games"
+PRESET_FILE_NAME = "game_setting.json"
+MAIN_UI_PATH = PROJECT_PATH / "ui" / "modbuddy.ui"
+FORM_PATH = PROJECT_PATH / "ui" / "edit_mod_form.ui"
 
 ENABLED_COLUMN = 0
 MODNAME_COLUMN = 1
 PATH_COLUMN = 2
 
 
-class Modbuddy():
+class Modbuddy:
     def __init__(self, ui: QMainWindow):
 
         self.ui = ui
+        self.fomod = None
+        self.sources = None
 
         self.init_settings()
 
@@ -34,6 +50,8 @@ class Modbuddy():
 
         # Connect buttons
         self.ui.move_up.clicked.connect(self.move_row_up)
+        self.ui.toggle_mod.clicked.connect(self.toggle_targeted_mod)
+        self.ui.edit_mod.clicked.connect(self.edit_targeted_mod)
         self.ui.move_down.clicked.connect(self.move_row_down)
         self.ui.new_mod_button.clicked.connect(self.install_new_mod)
         self.ui.new_mod_archived_button.clicked.connect(self.install_new_archived_mod)
@@ -42,7 +60,9 @@ class Modbuddy():
         # - Game profiles
         self.ui.load_profile_button.clicked.connect(self.load_current_profile)
         self.ui.save_profile_button.clicked.connect(self.write_preset_to_config)
-        self.ui.duplicate_profile_button.clicked.connect(self.create_new_mod_table_config)
+        self.ui.duplicate_profile_button.clicked.connect(
+            self.create_new_mod_table_config
+        )
 
         # - Game
         self.ui.new_game_button.clicked.connect(self.create_new_game)
@@ -51,14 +71,21 @@ class Modbuddy():
 
         self.ui.exit_button.clicked.connect(app.exit)
 
+        # - Sources
+        self.ui.source_add.clicked.connect(self.add_source)
+        self.ui.source_export.clicked.connect(self.export_source)
+        self.ui.source_check_updates.clicked.connect(self.update_sources)
+        self.ui.source_download.clicked.connect(self.download_sources)
+
+
         self.update_game_combobox()
         self.init_tablewidget()
         self.retrieve_last_activity()
+        self.init_sourcewidget()
         self.update_fileview()
 
-
     def init_settings(self):
-        """ Initial setup for mod buddy"""
+        """Initial setup for mod buddy."""
         GAME_PRESET_FOLDER.mkdir(exist_ok=True)
         try:
             self.settings = json.loads(Path(SETTINGS_NAME).read_text())
@@ -68,26 +95,26 @@ class Modbuddy():
 
     @staticmethod
     def recursive_rmdir(delpath: Path):
-        for subpath in sorted(delpath.glob('**/*'), reverse=True):
+        for subpath in sorted(delpath.glob("**/*"), reverse=True):
             if subpath.is_dir():
                 subpath.rmdir()
             else:
                 subpath.unlink()
 
     def get_current_game(self) -> str:
-        """ Retrieve what game is currently active"""
+        """Retrieve what game is currently active."""
         return self.ui.game_combobox.currentText()
 
     def get_current_profile(self) -> str:
-        """ Retrieve what profile is currently active"""
+        """Retrieve what profile is currently active."""
         return self.ui.profile_combobox.currentText()
 
     def update_game_combobox(self):
-        """Update information inside the game combobox"""
+        """Update information inside the game combobox."""
         self.ui.game_combobox.clear()
-        current_game = self.settings.get('lastactivity', {}).get('game')
+        current_game = self.settings.get("lastactivity", {}).get("game")
         index = None
-        for i, x in enumerate(GAME_PRESET_FOLDER.glob('*.json')):
+        for i, x in enumerate(GAME_PRESET_FOLDER.glob("*.json")):
             self.ui.game_combobox.addItem(x.stem)
             if current_game == x.stem:
                 index = i
@@ -95,11 +122,11 @@ class Modbuddy():
             self.ui.game_combobox.setCurrentIndex(index)
 
     def update_profile_combobox(self):
-        """Update information inside the preset combobox"""
+        """Update information inside the preset combobox."""
         self.ui.profile_combobox.clear()
-        current_game = self.settings.get('lastactivity', {}).get('profile')
+        current_game = self.settings.get("lastactivity", {}).get("profile")
         index = None
-        for i, x in enumerate(self.game_setting['profiles']):
+        for i, x in enumerate(self.game_setting["profiles"]):
             self.ui.profile_combobox.addItem(x)
             if current_game == x:
                 index = i
@@ -107,7 +134,7 @@ class Modbuddy():
             self.ui.profile_combobox.setCurrentIndex(index)
 
     def update_last_activity(self, game: str = "", profile: str = ""):
-        """Update the current last_activity and store it
+        """Update the current last_activity and store it.
 
         :param game: Current game, defaults to ""
         :type game: str, optional
@@ -115,33 +142,36 @@ class Modbuddy():
         :type profile: str, optional
         """
         last_activity = {
-            'game': game or self.get_current_game(),
-            'profile': profile or self.get_current_profile()
+            "game": game or self.get_current_game(),
+            "profile": profile or self.get_current_profile(),
         }
-        self.settings['lastactivity'] = last_activity
+        self.settings["lastactivity"] = last_activity
         # print(last_activity)
-        Path(SETTINGS_NAME).write_text(
-            json.dumps(self.settings, indent=4))
+        Path(SETTINGS_NAME).write_text(json.dumps(self.settings, indent=4))
 
     def retrieve_last_activity(self):
-        """Update the UI with contents from lastactivity"""
-        last = self.settings.get('lastactivity')
+        """Update the UI with contents from lastactivity."""
+        last = self.settings.get("lastactivity")
         if last:
-            game = last.get('game')
-            profile = last.get('profile')
+            game = last.get("game")
+            profile = last.get("profile")
             self.load_game(game)
             self.load_profile(profile)
 
     def create_new_mod_table_config(self):
-        """Take the current mod setup presented,
-        create a new mod preset and save it to the settings"""
+        """Create a new mod table configuration.
+
+        Take the current mod setup presented,
+        create a new mod preset and save it to the settings
+        """
         preset_name, ok = QInputDialog.getText(
-            self, "", "Preset name:", QLineEdit.Normal, self.get_current_profile())
+            self.ui, "", "Preset name:", QLineEdit.Normal, self.get_current_profile()
+        )
         if not ok:
             return
 
-        config = self.game_setting['profiles'].get(self.get_current_profile())
-        self.game_setting['profiles'][preset_name] = config
+        config = self.game_setting["profiles"].get(self.get_current_profile())
+        self.game_setting["profiles"][preset_name] = config
 
         self.write_preset_to_config()
         self.update_last_activity(profile=preset_name)
@@ -149,28 +179,30 @@ class Modbuddy():
         self.update_profile_combobox()
 
     def write_preset_to_config(self):
-        """Update the current mod setup to its respective profile"""
+        """Update the current mod setup to its respective profile."""
         Path(self.target_preset_path).write_text(
-            json.dumps(self.game_setting, indent=4))
+            json.dumps(self.game_setting, indent=4)
+        )
 
     def load_profile(self, target_profile: str):
-        """Initialize a chosen preset to the mod table
+        """Initialize a chosen preset to the mod table.
 
         :param target_profile: A profile that exists inside profiles in 'game_setting.json'
         :type target_profile: str
         """
-        self.current_profile = self.game_setting['profiles'].get(target_profile)
+        self.current_profile = self.game_setting["profiles"].get(target_profile)
         self.init_tablewidget(target_profile)
+        self.init_sourcewidget(target_profile)
 
     def load_current_profile(self):
-        """Initialize the current preset (Chosen in GUI)"""
+        """Initialize the current preset (Chosen in GUI)."""
         preset = self.get_current_profile()
         self.load_profile(preset)
         self.update_last_activity()
 
     def update_fileview(self):
-        """Update the file explorer with current game settings"""
-        mod_path = self.game_setting.get('game_mod_folder')
+        """Update the file explorer with current game settings."""
+        mod_path = self.game_setting.get("game_mod_folder")
         if not mod_path:
             return
         path = str(Path(mod_path).parent)
@@ -179,99 +211,109 @@ class Modbuddy():
         self.ui.file_view.setModel(self.fs_mod)
         self.ui.file_view.setRootIndex(self.fs_mod.index(path))
         self.ui.file_view.expand(self.fs_mod.index(mod_path))
-        
+
     def set_dirty_status(self, dirty: bool):
-        """Update functionality on buttons with regards to modified contents"""
+        """Update functionality on buttons with regards to modified contents."""
         self.is_dirty = dirty
         self.ui.initialize_mod.setEnabled(self.is_dirty)
         self.ui.save_profile_button.setEnabled(self.is_dirty)
 
     def create_new_game(self):
-        """Start a wizard to create a new game"""
+        """Start a wizard to create a new game."""
         game_mod_folder_str = QFileDialog.getExistingDirectory(
-            self.ui, 'Get mod folder'
+            self.ui, "Get mod folder"
         )
         if not game_mod_folder_str:
             return
         game_mod_folder = Path(game_mod_folder_str)
         game_preset_name, ok = QInputDialog.getText(
-            self.ui, "", "Game preset name:", QLineEdit.Normal, game_mod_folder.parent.stem)
+            self.ui,
+            "",
+            "Game preset name:",
+            QLineEdit.Normal,
+            game_mod_folder.parent.stem,
+        )
         if ok:
-            QMessageBox.information(self.ui, 'Done', 'Game is set up and ready to go!')
+            QMessageBox.information(self.ui, "Done", "Game is set up and ready to go!")
 
         game_folder = game_mod_folder.parent
-        backup_mod_folder = game_folder / '.mods'
+        backup_mod_folder = game_folder / ".mods"
         try:
             backup_mod_folder.mkdir()
         except FileExistsError:
             raise
 
         # Create a backup of the original files, will be used for modding
-        initial_mod_content_folder = backup_mod_folder / 'base_content'
+        initial_mod_content_folder = backup_mod_folder / "base_content"
         initial_mod_content_folder.mkdir()
 
         x = modpack.ModPack(
-            game_mod_folder, initial_mod_content_folder, case_sensitive=True)
+            game_mod_folder, initial_mod_content_folder, case_sensitive=True
+        )
         x.add_mod()
 
-        BASE_CONTENT_NAME = 'Base content'
+        BASE_CONTENT_NAME = "Base content"
 
         preset = {
-            'default_mod_folder': str(backup_mod_folder.resolve()),
-            'game_mod_folder': str(game_mod_folder.resolve()),
-            'profiles': {
-                'default': [{
-                    "enabled": True,
-                    "name": BASE_CONTENT_NAME
-                }]
-            },
-            'mods': {
-                BASE_CONTENT_NAME: str(initial_mod_content_folder.resolve())
-            }
+            "default_mod_folder": str(backup_mod_folder.resolve()),
+            "game_mod_folder": str(game_mod_folder.resolve()),
+            "profiles": {"default": [{"enabled": True, "name": BASE_CONTENT_NAME}]},
+            "sources": [],
+            "mods": {BASE_CONTENT_NAME: str(initial_mod_content_folder.resolve())},
         }
-        Path(GAME_PRESET_FOLDER / f'{game_preset_name}.json').write_text(
-            json.dumps(preset, indent=4))
-        self.update_last_activity(game_preset_name, 'default')
+        Path(GAME_PRESET_FOLDER / f"{game_preset_name}.json").write_text(
+            json.dumps(preset, indent=4)
+        )
+        self.update_last_activity(game_preset_name, "default")
         self.update_game_combobox()
         self.load_game(game_preset_name)
 
     def load_game(self, target_preset: str):
-        """Load a new game and its presets
+        """Load a new game and its presets.
 
         :Param target_preset: Name of game (set when creating a new game)
         :type target_preset: str
         """
-        self.target_preset_path = GAME_PRESET_FOLDER / f'{target_preset}.json'
+        self.target_preset_path = GAME_PRESET_FOLDER / f"{target_preset}.json"
         self.game_setting = json.loads((self.target_preset_path).read_text())
         assert type(self.game_setting) is dict
 
-        self.ui.mod_dest.setText(self.game_setting.get('game_mod_folder'))
+        self.ui.mod_dest.setText(self.game_setting.get("game_mod_folder"))
         self.update_profile_combobox()
         self.load_current_profile()
         self.update_fileview()
         self.set_dirty_status(False)
 
     def load_targeted_game(self):
-        """Load the game selected in GUI"""
+        """Load the game selected in GUI."""
         target_game = self.get_current_game()
         self.load_game(target_game)
         self.update_last_activity()
 
     def install_new_mod(self):
-        """Install a new mod already extracted somewhere"""
-        self.add_mod(Path(self.game_setting.get('default_mod_folder') or "."))
+        """Install a new mod already extracted somewhere."""
+        self.add_mod(Path(self.game_setting.get("default_mod_folder") or "."))
 
     def install_new_archived_mod(self):
-        """Install a new mod from an archive"""
+        """Install a new mod from an archive."""
         archives = QFileDialog.getOpenFileNames(
-            self.ui, 'Select archives to be installed', str(Path.home()), "Supported archives (*.zip *.tar)")
+            self.ui,
+            "Select archives to be installed",
+            str(Path.home()),
+            "Supported archives (*.7z *.cb7 *.bz2 *.cab *.Z *.cpio *.deb *.dms *.flac *.gz *.iso *.lrz *.lha *.lzh *.lz *.lzma *.lzo *.rpm *.rar *.cbr *.rz *.shn *.tar *.cbt *.xz *.zip *.jar *.cbz *.zoo)",
+        )
         if not archives:
             return
-        default_mod_folder = self.game_setting.get('default_mod_folder')
+        default_mod_folder = self.game_setting.get("default_mod_folder")
         if not default_mod_folder:
-            QMessageBox.warning(self.ui, '', (
-                "Sorry, but your settings doesn't have ",
-                "a default destination for mods. Is it an old config?"))
+            QMessageBox.warning(
+                self.ui,
+                "",
+                (
+                    "Sorry, but your settings doesn't have "
+                    "a default destination for mods. Is it an old config?"
+                ),
+            )
 
         assert type(default_mod_folder) is str
         for archive in archives[0]:
@@ -279,43 +321,95 @@ class Modbuddy():
             try:
                 folder_name = Path(archive).stem
                 target_folder = Path(default_mod_folder) / folder_name
-                shutil.unpack_archive(archive, target_folder)
-            except shutil.ReadError:
-                QMessageBox.warning(self.ui, '', f'Sorry, but {suff}-archives is not supported')
+                patoolib.extract_archive(
+                    archive, outdir=str(target_folder), interactive=False
+                )
+            except Exception as e:
+                QMessageBox.warning(self.ui, "", f"An unexpected error orrured, {e}")
             else:
+                if Path.exists(target_folder / "fomod"):
+                    x = QMessageBox.question(
+                        self.ui,
+                        "",
+                        (
+                            "Fomod folder detected. Do you want to parse it as a fomod-mod?"
+                        ),
+                    )
+                    if x == QMessageBox.Yes:
+                        self.begin_fomod_parsing(target_folder)
+                        return
                 self.add_mod(target_folder)
 
     def add_mod(self, folder_path: Path):
-        """Import a mod to the current game
+        """Import a mod to the current game.
 
         :param folder_path: A path representing the 'root' of the mod folder
         :type folder_path: Path
         """
-        print(folder_path)
-        folder = QFileDialog.getExistingDirectory(self.ui, 'Choose subfolder', str(folder_path),
-                                                  options=QFileDialog.DontUseNativeDialog)
-        if not folder:
+        folder_choice = QFileDialog.getExistingDirectory(
+            self.ui,
+            "Choose subfolder",
+            str(folder_path),
+            options=QFileDialog.DontUseNativeDialog,
+        )
+        if not folder_choice:
             return
-        folder_name = Path(folder_path).stem
-        text, ok = QInputDialog.getText(
-            self.ui, "Get mod name", "Name input of mod:", QLineEdit.Normal, folder_name)
-        if ok:
-            self.add_row_to_mods(name=text, path=folder)
 
-    def add_row_to_mods(self, name: str, path: Path):
-        """Add a given mod to the current game
+        folder = Path(folder_choice)
+        if Path.exists(folder / "fomod"):
+            x = QMessageBox.question(
+                self.ui,
+                "",
+                ("Fomod folder detected. Do you want to parse it as a fomod-mod?"),
+            )
+            if x == QMessageBox.Yes:
+                self.begin_fomod_parsing(folder)
+        else:
+            folder_name = Path(folder_path).stem
+            text, ok = QInputDialog.getText(
+                self.ui,
+                "Get mod name",
+                "Name input of mod:",
+                QLineEdit.Normal,
+                folder_name,
+            )
+            if ok:
+                self.add_row_to_mods(name=text, path=Path(folder))
+
+    def add_row_to_mods(self, name: str, path: Path, modtype: str = "basic"):
+        """Add a given mod to the current game.
+
+        :param name: unique name of the mod
+        :type name: str
+        :param path: A path representing the root of the folder, defaults to Path
+        :type path: Path, optional
+        :param modtype: How is this mod installed?
+        :type modtype: str
+        """
+        self.game_setting["mods"][name] = str(path)
+        for mod_profile in self.game_setting["profiles"].values():
+            mod_profile.append({"name": name, "enabled": True, "type": modtype})
+        self.modmodel.layoutChanged.emit()
+        self.set_dirty_status(True)
+
+    def add_row_to_mods_fomod_style(self, name: str, path: Path, fomod_results: dict):
+        """Add a given mod to the current game with fomod-related presets.
 
         :param name: unique name of the mod
         :type name: str
         :param path: A path representing the root of the folder, defaults to Path
         :type path: Path, optional
         """
-        self.game_setting['mods'][name] = path
-        for x in self.game_setting['profiles'].values():
-            x.append({
-                'name': name,
-                'enabled': False
-            })
+        self.game_setting["mods"][name] = str(path)
+        for mod_profile in self.game_setting["profiles"].values():
+            mod_profile.append(
+                {
+                    "name": name,
+                    "enabled": True,
+                    "type": "fomod",
+                    "options": fomod_results,
+                }
+            )
         self.modmodel.layoutChanged.emit()
         self.set_dirty_status(True)
 
@@ -325,74 +419,295 @@ class Modbuddy():
     def move_row_up(self):
         row = self.get_mod_list_row()
         if row > 0:
-            self._move_row(row, row-1)
+            self._move_row(row, row - 1)
 
     def move_row_down(self):
         row = self.get_mod_list_row()
         try:
-            self._move_row(row, row+1)
+            self._move_row(row, row + 1)
         except IndexError:
             pass
-        
+
     def _move_row(self, index_a: int, index_b: int):
-        """Switch an entry between two rows in the mod list"""
-        game_profile = self.game_setting['profiles'].get(self.get_current_profile())
-        game_profile[index_a], game_profile[index_b] = game_profile[index_b], game_profile[index_a]
+        """Switch an entry between two rows in the mod list."""
+        game_profile = self.game_setting["profiles"].get(self.get_current_profile())
+        game_profile[index_a], game_profile[index_b] = (
+            game_profile[index_b],
+            game_profile[index_a],
+        )
         self.modmodel.layoutChanged.emit()
         self.set_dirty_status(True)
 
+    def edit_targeted_mod(self):
+        """Edit selected mod."""
+        row = self.get_mod_list_row()
+        try:
+            game_profile = self.game_setting["profiles"].get(self.get_current_profile())
+            mod_settings = self.game_setting["mods"]
+            targeted_mod = mod_settings.get(game_profile[row]["name"])
+
+            old_path = mod_settings.get(game_profile[row]["name"])
+            old_name = game_profile[row]["name"]
+            loader = QUiLoader()
+            dialog = loader.load(FORM_PATH, self.ui)
+            dialog.nameLineEdit.insert(game_profile[row]["name"])
+            dialog.enabledCheckBox.setChecked(game_profile[row]["enabled"])
+            dialog.pathLineEdit.insert(old_path)
+            dialog.show()
+            if dialog.exec():
+                self.set_dirty_status(True)
+                new_path = dialog.pathLineEdit.text()
+                new_name = dialog.nameLineEdit.text()
+                if new_name != old_name:
+                    # Update all profiles with new name
+                    mod_settings[new_name] = mod_settings.pop(old_name)
+                    for x in self.game_setting["profiles"].values():
+                        for y in x:
+                            if y.get("name") == old_name:
+                                y["name"] = new_name
+
+                if new_path != old_path:
+                    mod_settings[new_name] = new_path
+
+                game_profile[row]["enabled"] = bool(dialog.enabledCheckBox.checkState())
+
+        except IndexError:
+            pass
+
+    def toggle_targeted_mod(self):
+        """Toggle selected mod."""
+        row = self.get_mod_list_row()
+        try:
+            game_profile = self.game_setting["profiles"].get(self.get_current_profile())
+            game_profile[row]["enabled"] = not game_profile[row]["enabled"]
+            self.modmodel.layoutChanged.emit()
+            self.set_dirty_status(True)
+        except IndexError:
+            pass
+
     def init_tablewidget(self, profile=""):
-        """Initialize the table with mods
+        """Initialize the table with mods.
 
         :param profile: Profile name, defaults to ""
         :type profile: str, optional
         """
         if not profile:
             profile = self.get_current_profile()
-        self.modmodel = models.ModModel(
-            settings=self.game_setting, profile=profile)
+        self.modmodel = models.ModModel(settings=self.game_setting, profile=profile)
         self.ui.mod_list.setModel(self.modmodel)
         self.ui.mod_list.resizeColumnToContents(MODNAME_COLUMN)
 
+    def init_sourcewidget(self, profile=""):
+        """Initialize the table with sources."""
+        self.sourcemodel = models.SourceModel(sources=self.game_setting.get("sources"))
+        self.ui.source_tableview.setModel(self.sourcemodel)
+
+    def update_sources(self):
+        """Update sources."""
+        # Pull requests are welcome
+        x = QMessageBox.question(
+            self.ui,
+            "",
+            ("Mod buddy can freeze a bit while this runs. Do you want to proceed?"),
+        )
+        if x != QMessageBox.Yes:
+            return
+        total_length = len(self.game_setting.get("sources"))
+        for i, source in enumerate(self.game_setting.get("sources")):
+            sourceclass = sources.get_class_classifier(source["url"])
+            test = sourceclass.from_dict(source)
+            test.update()
+            source.update(test.to_dict())
+            print(f"{i+1}/{total_length} - Updated metadata for {test.title}")
+        self.sourcemodel.layoutChanged.emit()
+        self.write_preset_to_config()
+        QMessageBox.information(self.ui, "Done", "Mod table are up to date")
+
+    def _assert_mods_is_added_from_source(self, mod: sources.SourceModdb):
+        """Assert that the subfolders from a mod exists. If they do not exist, create them as new mods."""
+        default_mod_folder = Path(self.game_setting.get("default_mod_folder"))
+        mod_settings = self.game_setting["mods"]
+        all_mods = mod_settings.values()
+        for subfolder in mod.folders:
+            potentialmod = f"{default_mod_folder / mod.foldername / subfolder}"
+            print(f"{potentialmod=}")
+            if potentialmod not in all_mods:
+                print("thisSomeGOODshit.mpeg")
+                self.add_row_to_mods(
+                    name=f"{mod.foldername}/{subfolder}",
+                    path=Path(potentialmod),
+                    modtype="source",
+                )
+            else:
+                print("imgoodthx.jpeg")
+
+    def download_sources(self):
+        """Download outdated sources."""
+        downloaded_something = False
+        total_length = len(self.game_setting.get("sources"))
+        for i, source in enumerate(self.game_setting.get("sources")):
+            source_object = sources.get_class_classifier(source["url"]).from_dict(
+                source
+            )
+            print(f"{source_object.title} {source_object.installed} - {source_object.updated}")
+            if source_object.updated:
+                last_updated = max(source_object.added, source_object.updated)
+            else:
+                last_updated = source_object.added
+            if source_object.installed.timestamp() <= last_updated.timestamp():
+                dl_path = (
+                    Path(self.game_setting.get("default_mod_folder"))
+                    / source_object.foldername
+                )
+                dl_path.mkdir(exist_ok=True)
+                downloaded_file = dl_path / source_object.filename
+                if not source_object.check_if_file_exists(downloaded_file):
+                    print(f"Downloading {source_object.download_url=} to {dl_path=}")
+                    source_object.download_file(dl_path)
+                try:
+                    print(f"{i+1}/{total_length} - {downloaded_file=}")
+                    patoolib.extract_archive(
+                        str(downloaded_file), outdir=str(dl_path), interactive=False
+                    )
+                    if isinstance(source_object, sources.SourceGitHub):
+                        # Folders from github is laid out as "Name-Project-SHA"
+                        # This is a neat workaroud to avoid renaming mods everytime there in an update
+                        git_downloaded_root = [
+                            p for p in dl_path.iterdir() if p.is_dir()
+                        ]
+                        if len(git_downloaded_root) == 1:
+                            git_folder = git_downloaded_root[0]
+                            git_folder.rename(dl_path / source_object.foldername)
+                    source_object.installed = datetime.now()
+                    self._assert_mods_is_added_from_source(source_object)
+                    source.update(source_object.to_dict())
+                except Exception as e:
+                    raise
+                print(f"{i+1}/{total_length} - finished")
+                downloaded_something = True
+            else:
+                print(f"{i+1}/{total_length} - No need to download")
+        if downloaded_something:
+            QMessageBox.information(self.ui, "Done", "Sources are downloaded")
+        else:
+            QMessageBox.warning(
+                self.ui,
+                "Nothing done",
+                "No mods were considered outdated.\nHave you checked for sources lately?",
+            )
+        self.write_preset_to_config()
+
+    def add_source(self):
+        content, ok = QInputDialog.getMultiLineText(
+            self.ui,
+            "Gibe urls pls",
+            "separate urls by newline, and subfolders by semicolon",
+            "URL;folder1;folder2",
+        )
+        if ok:
+            for urlgroup in content.split("\n"):
+                try:
+                    if ";" in urlgroup:
+                        url, folders = urlgroup.split(";", 1)
+                        sourceclass = sources.get_class_classifier(url)
+                        tmp_source = sourceclass.from_url(url, folders.split(";"))
+                        self.game_setting.get("sources").append(tmp_source.to_dict())
+                    else:
+                        sourceclass = sources.get_class_classifier(urlgroup)
+                        tmp_source = sourceclass.from_url(urlgroup)
+                        self.game_setting.get("sources").append(tmp_source.to_dict())
+                    print(f"Added {tmp_source.title}")
+                    sleep(2)
+                except AttributeError:
+                    print(f"Something went wrong on url {urlgroup}")
+        self.sourcemodel.layoutChanged.emit()
+        self.write_preset_to_config()
+
+    def export_source(self):
+        """Export current configuration as a text file"""
+        lines = []
+        for src in self.game_setting.get("sources"):
+            folder_part = ""
+            if src["folders"]:
+                folder_part = ";" + ";".join(src["folders"])
+            lines.append(f"{src['url']}{folder_part}")
+        export_box = QMessageBox(self.ui, "1", "2")
+        export_box.setDetailedText("\n".join(lines))
+        export_box.exec()
+
     def clean_target_modfolder(self):
-        target_modfolder = Path(self.game_setting['game_mod_folder'])
+        target_modfolder = Path(self.game_setting["game_mod_folder"])
         if not target_modfolder:
-            QMessageBox.warning(self.ui, '', 'No target modfolder found')
+            QMessageBox.warning(self.ui, "", "No target modfolder found")
         else:
             del_path_target = target_modfolder.resolve()
-            x = QMessageBox.question(
-                self, 'DELETING FOLDER', f"Are you sure you want to delete \
-everything inside this folder?\n{del_path_target}")
+            messagebox_answer = QMessageBox.question(
+                self.ui,
+                "DELETING FOLDER",
+                f"Are you sure you want to delete \
+everything inside this folder?\n{del_path_target}",
+            )
 
-            if x == QMessageBox.Yes:
+            if messagebox_answer == QMessageBox.Yes:
                 self.recursive_rmdir(del_path_target)
-                QMessageBox.information(self.ui, 'Done', 'Mods are cleaned!')
+                QMessageBox.information(self.ui, "Done", "Mods are cleaned!")
 
     def letsgo_mydudes(self):
-        """Commit the current setup and fire the modifications"""
-        profile = self.game_setting['profiles'].get(self.get_current_profile())
-        mod_list = self.game_setting['mods']
-        enabled_mods = ',\n'.join([x.get('name') for x in profile if x.get('enabled')])
+        """Commit the current setup and fire the modifications."""
+        profile = self.game_setting["profiles"].get(self.get_current_profile())
+        mod_list = self.game_setting["mods"]
+        enabled_mods = ",\n".join([x.get("name") for x in profile if x.get("enabled")])
         target_mod_folder = Path(self.game_setting["game_mod_folder"])
-        
-        x = QMessageBox.question(self.ui, '', (
-            'This will delete all content inside:\n\n'
-            f'{target_mod_folder.resolve()}\n'
-            'and commit these mods afterwards:\n\n'
-            f'{enabled_mods}\n\n'
-            f'Are you sure about this?'
-        ))
-        if x == QMessageBox.Yes:
+
+        msgBox = QMessageBox()
+        msgBox.setText("Apply mods")
+        msgBox.setInformativeText(
+            (
+                "This will delete all content inside:\n"
+                f"{target_mod_folder.resolve()}\n"
+                "and start to apply mods:\n\n"
+                "Do you want to proceed?"
+            )
+        )
+        msgBox.setDetailedText(enabled_mods)
+        msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+        msgBox.setDefaultButton(QMessageBox.Yes)
+        ret = msgBox.exec()
+        if ret == QMessageBox.Yes:
             self.write_preset_to_config()
             try:
                 self.recursive_rmdir(target_mod_folder.resolve())
                 modpack.initialize_configs(
-                    profile, mod_list, INPUT_FOLDER, Path(self.game_setting['game_mod_folder']))
+                    profile,
+                    mod_list,
+                    INPUT_FOLDER,
+                    Path(self.game_setting["game_mod_folder"]),
+                )
             except Exception as e:
-                QMessageBox.warning(self.ui, '', f'Something went wrong\n{e}')
+                QMessageBox.warning(self.ui, "", f"Something went wrong\n{e}")
             else:
-                QMessageBox.information(self.ui, 'Done', 'Mods are loaded!')
+                QMessageBox.information(self.ui, "Done", "Mods are loaded!")
                 self.set_dirty_status(False)
+
+    def begin_fomod_parsing(self, base_folder: Path):
+        """Begin parsing of FOMOD-modpacks."""
+        if self.fomod is not None:
+            return
+
+        self.fomod = FomodParser(base_folder)
+        self.fomod.ui.show()
+        self.fomod.finished.clicked.connect(self.handle_fomod_results)
+
+    def handle_fomod_results(self):
+        """Handle results from parsing a fomod-folder."""
+        assert isinstance(self.fomod, FomodParser)
+        results = self.fomod.handle_results()
+
+        self.add_row_to_mods_fomod_style(
+            str(self.fomod.module_name), self.fomod.mod_folder, results
+        )
+        self.fomod = None
+        print(results)
 
 
 if __name__ == "__main__":
