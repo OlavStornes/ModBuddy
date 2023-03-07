@@ -110,17 +110,21 @@ class SourceModdb(SourceBase):
             checksum=site.find(text="MD5 Hash").parent.parent.span.text.strip(),
             url=url,
             download_url=site.find(id="downloadmirrorstoggle")["href"].strip(),
-            foldername=site.get("foldername", ""),
+            foldername=site.get("foldername", site.head.title.string.rsplit(".", 1)[0]),
             folders=folders,
         )
 
     @classmethod
     def from_dict(cls, entry: Dict[str, str]):
         """Initialize from a dictionary."""
+
+        foldername = entry.get("foldername")
+        if not foldername:
+            foldername = entry.get("filename").rsplit(".", 1)[0]
         return cls(
             title=entry.get("title"),
             filename=entry.get("filename"),
-            foldername=entry.get("foldername", ""),
+            foldername=foldername,
             folders=entry.get("folders"),
             description=entry.get("description"),
             installed=entry.get("installed", "1900-01-01 00:00:00+00:00"),
